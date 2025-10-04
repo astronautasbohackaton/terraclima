@@ -140,28 +140,38 @@
 
   <script src="./marcelo/js/script.js"></script>
   <script>
-    // Inicializar Leaflet cuando todo esté listo
-    window.addEventListener('load', () => {
-      if (!window.L) { alert('Leaflet no se cargó'); return; }
+        // Comprobar que Leaflet cargó correctamente
+    console.log('Leaflet version:', L && L.version);
 
-      // Centro inicial (Bolivia, por ejemplo)
-      const start = { lat: -16.5, lon: -68.15 };
+    // Crear mapa centrado en el mundo
+    const map = L.map('map').setView([0, 0], 2);
 
-      const map = L.map('map', { zoomControl: true })
-        .setView([start.lat, start.lon], 5);
+    // Capa base (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
 
-      // Tiles OSM en https (evita “Mixed Content”)
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(map);
+    // Variable global para el marcador
+    let marker;
 
-      // Marcador inicial
-      L.marker([start.lat, start.lon]).addTo(map);
+    // Evento: clic en el mapa
+    map.on('click', (e) => {
+      const lat = e.latlng.lat.toFixed(6);
+      const lon = e.latlng.lng.toFixed(6);
 
-      // Asegura que el mapa calcule bien el tamaño dentro de la celda
-      setTimeout(() => map.invalidateSize(), 0);
-      window.addEventListener('resize', () => map.invalidateSize());
+      console.log(`Coordenadas seleccionadas: ${lat}, ${lon}`);
+
+      // Si ya existe un marcador, muévelo
+      if (marker) {
+        marker.setLatLng(e.latlng);
+      } else {
+        // Si no, créalo
+        marker = L.marker(e.latlng).addTo(map);
+      }
+
+      // Mostrar popup con las coordenadas
+      marker.bindPopup(`Lat: ${lat}<br>Lon: ${lon}`).openPopup();
     });
   </script>
 </body>
