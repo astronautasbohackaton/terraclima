@@ -1,13 +1,53 @@
-<!doctype html><html><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-<style>html,body,#map{height:100%;margin:0}</style></head>
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    html, body, #map {
+      height: 100%;
+      margin: 0;
+    }
+  </style>
+</head>
 <body>
-<div id="map"></div>
-<script>
-  console.log('Leaflet version:', L && L.version);
-  const map=L.map('map').setView([0,0],2);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
-</script>
-</body></html>
+  <div id="map"></div>
+  <script>
+    // Comprobar que Leaflet cargó correctamente
+    console.log('Leaflet version:', L && L.version);
+
+    // Crear mapa centrado en el mundo
+    const map = L.map('map').setView([0, 0], 2);
+
+    // Capa base (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Variable global para el marcador
+    let marker;
+
+    // Evento: clic en el mapa
+    map.on('click', (e) => {
+      const lat = e.latlng.lat.toFixed(6);
+      const lon = e.latlng.lng.toFixed(6);
+
+      console.log(`Coordenadas seleccionadas: ${lat}, ${lon}`);
+
+      // Si ya existe un marcador, muévelo
+      if (marker) {
+        marker.setLatLng(e.latlng);
+      } else {
+        // Si no, créalo
+        marker = L.marker(e.latlng).addTo(map);
+      }
+
+      // Mostrar popup con las coordenadas
+      marker.bindPopup(`Lat: ${lat}<br>Lon: ${lon}`).openPopup();
+    });
+  </script>
+</body>
+</html>
