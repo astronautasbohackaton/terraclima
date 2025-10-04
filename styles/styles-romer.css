@@ -1,0 +1,99 @@
+/* visual clima */
+body {
+    font-family: "Quicksand", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 700;
+    font-style: normal;
+    /* CENTRADO GENERAL de todos los widgets */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0; 
+}
+
+/* Contenedor principal que envuelve todo (widget-container es redundante, usamos widgets-container) */
+.widgets-container {
+    display: flex; 
+    gap: 25px; /* Espacio entre las tarjetas */
+    padding: 20px;
+}
+
+/* Contenedor principal de CADA widget */
+.parent {
+    width: 250px; /* Ancho ajustado para que quepan 3 */
+    padding: 20px;
+    background: #6c757d; 
+    border-radius: 15px;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    text-align: center; /* Centrar el texto en general */
+}
+
+/* Estructura interna */
+.subparent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.location {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+}
+
+/* Sección de Icono */
+.main-display {
+    /* Usamos flex para centrar el icono si es necesario, pero es simple */
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.icon-main {
+    width: 70px; /* Tamaño del icono */
+    height: 70px;
+}
+
+/* * ----------------------------------------------------
+ * CLAVE: ESTILO MODIFICADO PARA .details-grid 
+ * ----------------------------------------------------
+ */
+.details-grid {
+    width: 100%;
+    /* 1. Usamos Flexbox para organizarlos */
+    display: flex;
+    /* 2. Los alineamos en columna (uno encima del otro) */
+    flex-direction: column;
+    /* 3. Centramos el contenido dentro del grid */
+    align-items: center;
+    justify-content: center;
+}
+
+/* Estilo para la temperatura (en la primera tarjeta) */
+.temperature {
+    font-size: 4rem; 
+    font-weight: 900;
+    margin: 0; /* Quitar márgenes por defecto del h1 */
+}
+
+/* Estilo para los datos en las tarjetas secundarias (Precipitación y Viento) */
+.details-grid h1 {
+    margin: 0; /* Quitar márgenes por defecto */
+    line-height: 1.1; /* Espaciado entre líneas */
+}
+
+/* Para el primer h1 (el valor principal, e.g., 4 mm / 9km/h) */
+.details-grid h1:first-child {
+    font-size: 2.5rem; /* Hacemos el valor principal más grande */
+    font-weight: 900;
+    margin-bottom: 5px; /* Pequeño espacio debajo del valor principal */
+}
+
+/* Para el segundo h1 (el valor secundario, e.g., 30% / 215) */
+.details-grid h1:nth-child(2) {
+    font-size: 1.5rem; /* Hacemos el valor secundario más pequeño */
+    font-weight: 500;
+    opacity: 0.8; /* Lo hacemos ligeramente más tenue */
+}
