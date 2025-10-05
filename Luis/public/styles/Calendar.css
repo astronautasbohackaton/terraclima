@@ -53,7 +53,7 @@
 .calendar-container .calendar-body li{
   width:calc(100%/7);
   height:30px; line-height:30px;
-  font-size:.9rem; color:#414141;
+  font-size:.9rem; color:#cea0a0;
   margin-top:14px; position:relative; z-index:1; cursor:pointer;
 }
 
