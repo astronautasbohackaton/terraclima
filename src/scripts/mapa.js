@@ -30,6 +30,7 @@
     });
 
     // ========= PREDICTOR (NASA POWER) =========
+    // ========== DATOS PARA EL FRONTEND=========
     const el = {
       date:  document.getElementById('p-date'),
       coord: document.getElementById('p-coord'),
@@ -38,6 +39,8 @@
       t2mmin:document.getElementById('p-t2mmin'),
       prec:  document.getElementById('p-prec'),
       wind:  document.getElementById('p-wind'),
+      pres:  document.getElementById('p-pres'),
+      r_h2m: document.getElementById('p-r_h2m'),
       status:document.getElementById('p-status')
 
     };
@@ -46,10 +49,11 @@
       const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0');
       return `${y}${m}${dd}`;
     };
-    function lastNDaysRange(n=15){ // más días para evitar -999
+    //TEMPERATURA
+    function lastNDaysRange(){ // n=10 más días para evitar -999
       const today=new Date();
-      const end=new Date(today);  end.setDate(end.getDate()-1);
-      const start=new Date(today); start.setDate(start.getDate()-n);
+      const end=new Date(today);  end.setDate(end.getDate()-3); //hace 3 dias
+      const start=new Date(today); start.setDate(start.getDate()-13); //hace 3 dias + 10 dias
       return { start: fmtYYYYMMDD(start), end: fmtYYYYMMDD(end) };
     }
     const isoFromYYYYMMDD = s => `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;
@@ -70,14 +74,18 @@
       setStatus('Consultando NASA POWER…', true);
       clearVals();
 
-      const { start, end } = lastNDaysRange(15);
-      const params = ['T2M','T2M_MAX','T2M_MIN','PRECTOTCORR','WS10M'].join(',');
+      const { start, end } = lastNDaysRange(10); // muestrame los 10 dias
+      //============ URL API NASA ===============//
+      //tmedia, tmaxima, tminima, precipitacion, viento, presion, humedadRel
+      const params = ['T2M','T2M_MAX','T2M_MIN','PRECTOT','WS10M','PS','RH2M'].join(',');
       const url = new URL('https://power.larc.nasa.gov/api/temporal/daily/point');
       url.search = new URLSearchParams({
         parameters: params, community: 'ag',
         longitude: lon, latitude: lat,
         start, end, format: 'JSON'
       });
+    
+      console.log(url);
 
       try{
         const r = await fetch(url, { mode: 'cors' });
@@ -97,18 +105,24 @@
         const latest = valid.sort().pop();
         const iso = isoFromYYYYMMDD(latest);
 
-        const T2M     = safeNum(param.T2M?.[latest]);
-        const T2M_MAX = safeNum(param.T2M_MAX?.[latest]);
-        const T2M_MIN = safeNum(param.T2M_MIN?.[latest]);
-        const PREC    = safeNum(param.PRECTOTCORR?.[latest]);
-        const WIND    = safeNum(param.WS10M?.[latest]);
+        const T2M     = safeNum(param.T2M?.[latest]); //TMEDIA
+        const T2M_MAX = safeNum(param.T2M_MAX?.[latest]); //TMAXIMA
+        const T2M_MIN = safeNum(param.T2M_MIN?.[latest]); //TMINIMA
+        const PREC    = safeNum(param.PRECTOTCORR?.[latest]); //PRECIPITACION
+        const WIND    = safeNum(param.WS10M?.[latest]); //VIENTO
+        const PRES    = safeNum(param.PS?.[latest]); //PRESION
+        const R_H2M   = safeNum(param.RH2M?.[latest]); //HUMEDAD RELATIVA
 
+        //devuelve los datos
         el.date.textContent = iso;
         el.t2m.textContent   = T2M     != null ? `${T2M.toFixed(1)} °C`     : '—';
         el.t2mmax.textContent= T2M_MAX != null ? `${T2M_MAX.toFixed(1)} °C` : '—';
         el.t2mmin.textContent= T2M_MIN != null ? `${T2M_MIN.toFixed(1)} °C` : '—';
         el.prec.textContent  = PREC    != null ? `${PREC.toFixed(1)} mm/día`: '—';
         el.wind.textContent  = WIND    != null ? `${WIND.toFixed(1)} m/s`    : '—';
+        el.pres.textContent  = PRES    != null ? `${PRES.toFixed(1)} kPa`    : '—';
+        el.r_h2m.textContent = R_H2M   != null ? `${R_H2M.toFixed(1)} %`      : '—';
+
 
         setStatus(`Datos de ${iso}.`, false);
       }catch(err){
