@@ -6,7 +6,7 @@
 	   font-family:Arial,sans-serif;
 	    table-layout:fixed;
 		 }
-    th, td{ border:3px solid #333;
+    th, td{ border:0px solid #333;
 	 padding:1px;
 	  text-align:center;
 	   }
