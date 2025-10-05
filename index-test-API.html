@@ -1,11 +1,50 @@
-// Coordenadas de la Ciudad de México
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba CORS con NASA POWER</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .widget-test {
+            padding: 30px;
+            background-color: #0d3b66; /* Un color NASA */
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        h1 { font-size: 3rem; margin: 10px 0; }
+        p { font-size: 1.2rem; }
+        .estado { color: #ffeb3b; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="widget-test">
+        <h2>Temperatura de NASA POWER</h2>
+        <p>Ubicación: Ciudad de México (19.43, -99.13)</p>
+        <h1 id="temperatura">Cargando...</h1>
+        <p class="estado" id="estado-cors">Revisando conexión...</p>
+    </div>
+
+    <script>
+        // Coordenadas de la Ciudad de México
         const LATITUDE = 19.4326;
         const LONGITUDE = -99.1332;
         
         // Formatea la fecha de hoy como YYYYMMDD
-        const today = new Date();
-        const yyyymmdd = today.toISOString().slice(0, 10).replace(/-/g, '');
-
+        //const today = new Date();
+        //const yyyymmdd = today.toISOString().slice(0, 10).replace(/-/g, '');
+         const yyyymmdd = '20250925';
         // Construye la URL de la API de NASA POWER para obtener la temperatura (T2M)
         // Comunidades de energía o agroclimatología (AG) son comunes para T2M
         const NASA_POWER_URL = `https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M&community=AG&longitude=${LONGITUDE}&latitude=${LATITUDE}&start=${yyyymmdd}&end=${yyyymmdd}&format=JSON`;
@@ -37,7 +76,7 @@
                     // Extraer la temperatura T2M
                     const tempKelvin = data.properties.parameter.T2M[yyyymmdd];
                     // Convertir a Celsius (Kelvin - 273.15)
-                    const tempCelsius = (tempKelvin - 273.15).toFixed(1); 
+                    const tempCelsius = (tempKelvin).toFixed(1); 
 
                     tempElement.textContent = `${tempCelsius}°C`;
                     statusElement.textContent = 'Éxito: Datos obtenidos (¡CORS NO falló, muy inusual!)';
@@ -54,3 +93,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', obtenerTemperaturaNASA);
+    </script>
+</body>
+</html>
