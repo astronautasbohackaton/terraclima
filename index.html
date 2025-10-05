@@ -3,13 +3,203 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Mi sitio en GitHub Pages</title>
+  <title>WEBAPP TERRACLIMA</title>
+  <!-- Leaflet (CSS + JS) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Estilos Calendario -->
+  <link rel="stylesheet" href="./src/styles/Calendar.css">
+  <!-- Estilos Mapa -->
+  <link rel="stylesheet" href="./src/styles/Mapa.css">
+  <!-- Widgets -->
+  <link rel="stylesheet" href="./src/styles/Widget.css">
+  <!-- Fuentes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+
 </head>
 <body>
-  <h1>PREPARADO AMBIENTE DEPLOY DESPLIEGUES TEAM ASTRONAUTASBO SPACE APPS NASA 2025 GITHUB</h1>
-  <h1>Hola desde GitHub Pages</h1>
-  <h1>YA TENEMOS AMBIENTE DE DEPLOY CON IP PUBLICO Y SUB DNS GITHUB DONDE PODEMOS VISUALIZAR NUESTRO DESARROLLO EN WEB CLOUD I PODREMOS VERLOS DESDE IPS EXTRERNAL SMARTPHONES O WEB BROWSERS A NIVEL MUNDIAL</h1>
-  <div id="app"></div>
-  <script src="app.js"></script>
+
+  <table>
+    <colgroup>
+      <col style="width: 15%;">
+      <col style="width: 70%;">  <!-- mapa -->
+      <col style="width: 15%;">
+    </colgroup>
+
+    <thead>
+      <tr>
+        <td>
+          <div>
+          <img src="./marcelo/img/logo1.jpg" class="redondo" alt="Logo1" height="120" width="120" style="position:relative;">
+        </div>
+        </td>
+
+
+        <td><h1 style="text-align:center;">WEBAPP TERRACLIMA</h1></td>
+
+        <td><img src="./marcelo/img/logo3.jpeg" class="redondo" alt="Logo2" height="120" width="120" style="position: relative;"></td>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr>
+        <td></td>
+        <!-- MAPA (fila 1, columna 2) -->
+        <td class="map-cell">
+          <div class="map-mobile">
+          <div id="map" aria-label="Mapa (Leaflet)" ></div>
+          </div>
+        </td>
+        <td></td>
+      </tr>
+      <tr style="height: 10px;">
+        <td></td>
+        <td>
+<input id="id_input_latitud" type="text" placeholder="Escribe aquí" value="" />
+<input id="id_input_longitud" type="text" placeholder="Escribe aquí" value="" />
+        </td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>
+          <!-- Calendario existente -->
+          <div class="calendar-container">
+            <header class="calendar-header">
+              <p class="calendar-current-date"></p>
+              <div class="calendar-navigation">
+                <span id="calendar-prev"
+				 class="material-symbols-rounded">
+				 </span>
+                <span id="calendar-next" 
+				class="material-symbols-rounded">
+				</span>
+              </div>
+            </header>
+            <div class="calendar-body">
+              <ul class="calendar-weekdays">
+                <li>Sun</li>
+				<li>Mon</li>
+				<li>Tue</li>
+				<li>Wed</li>
+				<li>Thu</li>
+				<li>Fri</li>
+				<li>Sat</li>
+              </ul>
+              <ul class="calendar-dates"></ul>
+            </div>
+          </div>
+        </td>
+        <td>    <div class="widget-test">
+        <h2>Temperatura de NASA POWER</h2>
+        <p>Ubicación: Ciudad de México (19.43, -99.13)</p>
+        <h1 id="temperatura">Cargando...</h1>
+        <p class="estado" id="estado-cors">Revisando conexión...</p>
+    </div></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><input id="id_input_fecha_inicio" type="text" placeholder="Escribe aquí" value="" />
+<input id="id_input_fecha_fin" type="text" placeholder="Escribe aquí" value="" />
+  </td>
+        <td></td>
+         </tr>
+      <!-- ⬇️ AQUÍ VA EL PREDICTOR (sin mapa) -->
+      <tr>
+        <td></td>
+        <td>
+          <div class="predictor" id="predictor">
+            <h3>Clima (NASA POWER) <span class="badge" id="p-date">—</span></h3>
+            <div class="coord" id="p-coord">Selecciona una ubicación en el mapa de arriba.</div>
+            <div class="grid">
+              <div class="k">T2M (media)</div>     <div class="v" id="p-t2m">—</div>
+              <div class="k">T2M_MAX</div>         <div class="v" id="p-t2mmax">—</div>
+              <div class="k">T2M_MIN</div>         <div class="v" id="p-t2mmin">—</div>
+              <div class="k">Precipitación</div>   <div class="v" id="p-prec">—</div>
+              <div class="k">Viento (10 m)</div>   <div class="v" id="p-wind">—</div>
+            </div>
+            <div class="status" id="p-status">Listo.</div>
+          </div>
+          <!-- WIDGETS -->
+        <div class="widget-container">
+            <div class="widgets-container">
+                <!-- primera card -->
+                <div class="parent">
+                    <div class="subparent">
+                        <h2 class="location">Mexico City</h2>
+                        <div class="main-display">
+                            <img class="icon-main" src="/romer/src/widget/sol-256.png" alt="Icono de sol">
+                        </div>
+                        <div class="details-grid">
+                            <h1 class="temperature" data-nasa-param="T2M">
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+                <!-- segunda card -->
+                <div class="parent">
+                    <div class="subparent">
+                        <h2 class="location">Precipitación</h2>
+                        <div class="main-display">
+                            <img class="icon-main" src="/romer/src/widget/lluvia-256.png" alt="Icono de lluvia">
+                        </div>
+                        <div class="details-grid">
+                            <h1 class="precipitation" data-nasa-param="PRECTOTCORR">
+                            </h1>
+                        </div>
+
+                        <h2 class="location">Humedad Relativa</h2>
+                        <div class="main-display">
+                            <img class="icon-main" src="/romer/src/widget/humedad-256.png" alt="Icono de nubes">
+                        </div>
+                        <div class="details-grid">
+                            <h1 class="relative-humidity" data-nasa-param="RH2M">
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+                <!-- tercera card -->
+                <div class="parent">
+                    <div class="subparent">
+                        <h2 class="location">Velocidad del viento</h2>
+                        <div class="main-display">
+                            <img class="icon-main" src="/romer/src/widget/viento-256.png" alt="Icono de viento">
+                        </div>
+                        <div class="details-grid">
+                            <h1 class="wind-speed" data-nasa-param="WS10M">
+                            </h1>
+                        </div>
+
+                        <h2 class="location">Presión Atmosférica</h2>
+                        <div class="main-display">
+                            <img class="icon-main" src="/romer/src/widget/presion-256.png" alt="Icono de presión">
+                        </div>
+                        <div class="details-grid">
+                            <h1 class="surface-pressure" data-nasa-param="PS">
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </td>
+        <td>
+          
+        </td>
+      </tr>
+
+      <tr><td></td><td></td><td></td></tr>
+    </tbody>
+  </table>
+
+  <!-- SCRIPTS -->
+  <!-- CALENDARIO -->
+  <script src="./src/scripts/calendario.js"></script>
+  <!-- MAPA Y NASA API -->
+  <script src="./src/scripts/mapa.js"></script>
+  <!-- WIDGETS -->
+  <script src="./src/scripts/widget.js"></script>
 </body>
 </html>

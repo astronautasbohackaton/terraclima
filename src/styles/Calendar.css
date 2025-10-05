@@ -1,0 +1,75 @@
+/* ====== CALENDARIO (ENCAPSULADO) ====== */
+/* No hay body ni * globales — todo vive bajo .calendar-container */
+
+.calendar-container{
+  background:#484747;
+  width:100%;
+  max-width:360px;         /* ajústalo o quítalo si quieres ocupar la columna entera */
+  border-radius:10px;
+  box-shadow:0 15px 40px rgba(0,0,0,0.12);
+  color:#fff;
+  font-family:'Poppins', Arial, sans-serif;
+  margin:0 auto;           /* centra dentro de la celda */
+}
+
+.calendar-container .calendar-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:15px 20px 8px;
+}
+
+.calendar-container .calendar-current-date{
+  font-weight:500;
+  font-size:1.1rem;
+  margin:0;
+}
+
+.calendar-container .calendar-navigation{
+  display:flex; gap:4px;
+}
+.material-symbols-rounded{
+  font-variation-settings: 'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24;
+  font-size:20px;
+  height:30px; width:30px; line-height:30px;
+  text-align:center; border-radius:50%; user-select:none; cursor:pointer;
+  color:#e5e5e5;
+}
+.material-symbols-rounded:hover{ background:#f2f2f2; color:#333; }
+
+/* Cuerpo */
+.calendar-container .calendar-body{ padding:10px; }
+.calendar-container .calendar-body ul{
+  list-style:none; display:flex; flex-wrap:wrap; text-align:center;
+  margin:0; padding:0;
+}
+.calendar-container .calendar-weekdays li{
+  width:calc(100%/7);
+  font-weight:600; font-size:.85rem; color:#e5e5e5;
+}
+.calendar-container .calendar-dates{
+  margin-top:6px; width:100%;
+}
+.calendar-container .calendar-body li{
+  width:calc(100%/7);
+  height:30px; line-height:30px;
+  font-size:.9rem; color:#cea0a0;
+  margin-top:14px; position:relative; z-index:1; cursor:pointer;
+}
+
+/* Estados */
+.calendar-container .calendar-dates li.inactive{ color:#aaa; cursor:default; }
+.calendar-container .calendar-dates li.active{ color:#fff; }
+.calendar-container .calendar-dates li::before{
+  content:""; position:absolute; z-index:-1; top:50%; left:50%;
+  width:30px; height:30px; border-radius:50%; transform:translate(-50%,-50%);
+}
+.calendar-container .calendar-dates li.active::before{ background:#6964ff; }
+.calendar-container .calendar-dates li:not(.active):not(.highlight):hover::before{ background:#858484; }
+
+/* Selección manual */
+.calendar-container .calendar-dates li.highlight{
+  background:transparent; border:2px dotted #38f3b1; border-radius:50%;
+  position:relative; z-index:10;
+  height:30px; line-height:30px; text-align:center;
+}

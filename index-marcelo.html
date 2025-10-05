@@ -8,13 +8,14 @@
   <!-- Leaflet (CSS + JS) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-
   <!-- Estilos Calendario -->
   <link rel="stylesheet" href="./marcelo/public/styles/Calendar.css">
+  <!-- Estilos Mapa -->
+  <link rel="stylesheet" href="./marcelo/public/styles/Mapa.css">
   <!--  <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,
         FILL,GRAD@20..48,100..700,0..1,-50..200">-->
-  <style>
+  <!-- <style>
     /* ====== Tabla y mapa ====== */
     table{
 	 width:90%;
@@ -64,7 +65,7 @@
     .predictor .status{ margin-top:8px; font-size:12px; color:#444; }
     .predictor .loading{ animation:pulse 1s infinite; }
     @keyframes pulse { 0%{opacity:.6} 50%{opacity:1} 100%{opacity:.6} }
-  </style>
+  </style> -->
 </head>
 <body>
 
@@ -176,8 +177,8 @@
       <tr><td></td><td></td><td></td></tr>
     </tbody>
   </table>
-
-<script>
+  <!-- api test -->
+  <script>
         // Coordenadas de la Ciudad de México
         const LATITUDE = 19.4326;
         const LONGITUDE = -99.1332;
@@ -234,8 +235,10 @@
         }
 
         document.addEventListener('DOMContentLoaded', obtenerTemperaturaNASA);
-    </script>
+  </script>
+  <!-- calendar -->
   <script src="./marcelo/js/script.js"></script>
+  <!-- mapa -->
   <script>
     // ========= MAPA =========
     console.log('Leaflet version:', L && L.version);
