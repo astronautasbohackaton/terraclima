@@ -48,6 +48,13 @@ const manipulate = () => {
   addClickListenersToDays(currdate.innerText, year);
 };
 
+function formatearFecha(fecha) {
+    const year = fecha.getFullYear(); // Año
+    const month = (fecha.getMonth() + 1).toString().padStart(2, '0'); // Mes (sumamos 1 porque los meses empiezan desde 0)
+    const day = fecha.getDate().toString().padStart(2, '0'); // Día
+    
+    return `${year}${month}${day}`; // Devuelve la fecha en formato "yyyymmdd"
+}
 
 function addClickListenersToDays( month, year) {
   const allDays = day.querySelectorAll('li:not(.inactive)');
@@ -71,7 +78,22 @@ input_fecha_inicio.value=clickedDay;
 const input_fecha_fin= document.getElementById('id_input_fecha_fin');
 input_fecha_fin.value=month;
 
+
       console.log('Clicked day:', clickedDay);
+      console.log('Clicked day:', month);
+      console.log('Clicked day:', clickedDay+" "+month);
+      const fechaStr = clickedDay+" "+month;
+// Crear un objeto Date a partir de la cadena de texto
+const fecha = new Date(fechaStr);
+      console.log(fecha);
+
+
+      const fechaFormateada = formatearFecha(fecha);
+console.log(fechaFormateada); // 
+const input_fecha_format= document.getElementById('id_input_fecha_format');
+input_fecha_format.value=fechaFormateada;
+
+
     });
   });
 }

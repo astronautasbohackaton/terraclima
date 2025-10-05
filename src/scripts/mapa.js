@@ -76,6 +76,13 @@
       setStatus('Consultando NASA POWER…', true);
       clearVals();
 
+      const input_fecha_format= document.getElementById('id_input_fecha_format');
+        //input_fecha_format.value=fechaFormateada;
+
+        const fechaInicioStart = input_fecha_format.value;
+        console.log("fecha inicio start: "+fechaInicioStart);
+
+
       const { start, end } = lastNDaysRange(10); // muestrame los 10 dias
       //============ URL API NASA ===============//
       //tmedia, tmaxima, tminima, precipitacion, viento, presion, humedadRel
@@ -84,7 +91,7 @@
       url.search = new URLSearchParams({
         parameters: params, community: 'ag',
         longitude: lon, latitude: lat,
-        start, end, format: 'JSON'
+        start:fechaInicioStart, end:fechaInicioStart, format: 'JSON'
       });
     
       console.log(url);
