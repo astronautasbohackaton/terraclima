@@ -49,6 +49,7 @@
 }
 .calendar-container .calendar-dates{
   margin-top:6px; width:100%;
+ 
 }
 .calendar-container .calendar-body li{
   width:calc(100%/7);
