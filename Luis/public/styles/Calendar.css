@@ -68,9 +68,43 @@
 .calendar-container .calendar-dates li:not(.active):not(.highlight):hover::before{ background:#858484; }
 
 /* Selección manual */
-.calendar-container .calendar-dates li.highlight{
-  background:transparent; border:2px dotted #38f3b1; border-radius:50%;
-  position:relative; z-index:10;
-  height:30px; line-height:30px; text-align:center;
+/* CÍRCULO DE SELECCIÓN PERFECTO */
+.calendar-container .calendar-dates li { position: relative; display: grid; place-items: center; }
+
+/* quitamos el borde del li para que no deforme */
+.calendar-container .calendar-dates li.highlight {
+  border: none;
+  background: transparent;
 }
 
+/* el aro va en ::before, cuadrado y centrado => circunferencia */
+.calendar-container .calendar-dates li.highlight::before {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+
+  /* tamaño del aro: ajusta a gusto */
+  width: 2.1em;            /* o 30px si prefieres fijo */
+  aspect-ratio: 1 / 1;     /* <-- garantiza círculo */
+
+  border: 2px dotted #38f3b1;
+  border-radius: 50%;
+  background: transparent;
+  z-index: 1;
+}
+
+/* evita que el hover “rellene” el día seleccionado */
+.calendar-container .calendar-dates li.highlight:hover::before {
+  background: transparent !important;
+}
+
+
+/* pon esto DESPUÉS de tu Calendar.css */
+.calendar-dates li { outline: none; }              /* quita outline por defecto */
+.calendar-dates li:focus { outline: none; }        /* evita anillo al click */
+.calendar-dates li:focus-visible {                 /* solo al usar teclado (Tab) */
+  outline: 2px solid #8bc34a;
+  outline-offset: 2px;
+  border-radius: 50%;
+}
