@@ -4,31 +4,68 @@ body {
     font-optical-sizing: auto;
     font-weight: 700;
     font-style: normal;
-    /* CENTRADO GENERAL de todos los widgets */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+    /* Quitamos el centrado directo del body para dejar que la SECTION lo haga */
+    display: block; 
     margin: 0;
     background-color: #f0f0f0; 
 }
 
-/* Contenedor principal que envuelve todo (widget-container es redundante, usamos widgets-container) */
+/* ---------------------------------------------------- */
+/* NUEVOS ESTILOS PARA LA SECCIÓN CON FONDO DE PANTALLA */
+/* ---------------------------------------------------- */
+section {
+    /* Centra el contenido (widgets-container) */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100dvh; /* Asegura que la sección cubra toda la altura de la vista */
+    margin: 0;
+
+    /* Propiedades del Fondo de Pantalla */
+    /* Asegúrate de reemplazar 'URL_DE_TU_IMAGEN.jpg' con la ruta correcta */
+    background-image: url('/romer/src/wallpaper/saber.jpg'); 
+    background-size: cover; /* Asegura que la imagen cubra toda la sección */
+    background-position: center; /* Centra la imagen */
+    background-repeat: no-repeat; /* Evita que la imagen se repita */
+    padding: 20px 0; /* Un poco de padding vertical */
+}
+
+/* Contenedor que alinea las tres tarjetas horizontalmente */
 .widgets-container {
     display: flex; 
-    gap: 25px; /* Espacio entre las tarjetas */
+    gap: 25px; 
     padding: 20px;
+    /*background-color: rgba(0, 0, 0, 0.2);*/ 
+    border-radius: 20px;
 }
+
+
 
 /* Contenedor principal de CADA widget */
 .parent {
-    width: 250px; /* Ancho ajustado para que quepan 3 */
+    width: 250px; 
     padding: 20px;
-    background: #6c757d; 
+    /* Hacemos el fondo del widget semi-transparente para que se vea el fondo de la sección */
+    background: rgba(108, 117, 125, 0.85); /* Gris/Azul con 85% de opacidad */
     border-radius: 15px;
     color: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    text-align: center; /* Centrar el texto en general */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    text-align: center; 
+}
+
+/* ---------------------------------------------------- */
+/* ICONO GRANDE EN LA PRIMERA TARJETA (T2M) */
+/* ---------------------------------------------------- */
+
+/* Selector que apunta al ícono (.icon-main) DENTRO del primer .parent */
+.parent:first-child .icon-main {
+    width: 150px; /* Tamaño mucho más grande (ej. 150px) */
+    height: 150px;
+}
+
+/* Ajuste del margin-bottom para el contenedor del icono más grande */
+.parent:first-child .main-display {
+    margin-bottom: 20px; /* Aumentamos el espacio para el icono grande */
 }
 
 /* Estructura interna */
@@ -43,57 +80,48 @@ body {
     margin-bottom: 15px;
 }
 
-/* Sección de Icono */
+/* Sección de Icono (Estilo base para todos los demás iconos) */
 .main-display {
-    /* Usamos flex para centrar el icono si es necesario, pero es simple */
     display: flex;
     justify-content: center;
     margin-bottom: 10px;
 }
 
+/* Tamaño base del icono (Solo afecta a los iconos de las tarjetas 2 y 3) */
 .icon-main {
-    width: 70px; /* Tamaño del icono */
+    width: 70px; 
     height: 70px;
 }
 
-/* * ----------------------------------------------------
- * CLAVE: ESTILO MODIFICADO PARA .details-grid 
- * ----------------------------------------------------
- */
-.details-grid {
-    width: 100%;
-    /* 1. Usamos Flexbox para organizarlos */
-    display: flex;
-    /* 2. Los alineamos en columna (uno encima del otro) */
-    flex-direction: column;
-    /* 3. Centramos el contenido dentro del grid */
-    align-items: center;
-    justify-content: center;
-}
 
 /* Estilo para la temperatura (en la primera tarjeta) */
 .temperature {
     font-size: 4rem; 
     font-weight: 900;
-    margin: 0; /* Quitar márgenes por defecto del h1 */
+    margin: 0; 
 }
 
-/* Estilo para los datos en las tarjetas secundarias (Precipitación y Viento) */
+/* Estilos de las tarjetas secundarias (sin cambios) */
+.details-grid {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
 .details-grid h1 {
-    margin: 0; /* Quitar márgenes por defecto */
-    line-height: 1.1; /* Espaciado entre líneas */
+    margin: 0; 
+    line-height: 1.1; 
 }
-
-/* Para el primer h1 (el valor principal, e.g., 4 mm / 9km/h) */
+/* ... (resto de tus estilos de .details-grid h1 se mantienen) ... */
 .details-grid h1:first-child {
-    font-size: 2.5rem; /* Hacemos el valor principal más grande */
+    font-size: 2.5rem; 
     font-weight: 900;
-    margin-bottom: 5px; /* Pequeño espacio debajo del valor principal */
+    margin-bottom: 5px; 
 }
 
-/* Para el segundo h1 (el valor secundario, e.g., 30% / 215) */
 .details-grid h1:nth-child(2) {
-    font-size: 1.5rem; /* Hacemos el valor secundario más pequeño */
+    font-size: 1.5rem; 
     font-weight: 500;
-    opacity: 0.8; /* Lo hacemos ligeramente más tenue */
+    opacity: 0.8; 
 }
