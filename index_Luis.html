@@ -11,74 +11,47 @@
 
   <!-- Estilos Calendario -->
   <link rel="stylesheet" href="./Luis/public/styles/Calendar.css">
-  <!--  <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,
-        FILL,GRAD@20..48,100..700,0..1,-50..200">-->
+
   <style>
-    /* ====== Estilos tabla ====== */
-    table{
-      width: 90%;
-      border-collapse: collapse;
-      margin: 20px auto;
-      font-family: Arial, sans-serif;
-      table-layout: fixed; /* para respetar colgroup */
+    /* ====== Tabla y mapa ====== */
+    table{ width:90%; border-collapse:collapse; margin:20px auto; font-family:Arial,sans-serif; table-layout:fixed; }
+    th, td{ border:1px solid #333; padding:1px; text-align:center; }
+    caption{ font-size:1.3em; font-weight:bold; margin-bottom:10px; }
+    td.map-cell{ padding:0; }
+    #map{ width:100%; height:220px; display:block; }
+
+    /* Fondo */
+    body{
+      background-image:url('./marcelo/img/fondo1.jpg');
+      background-size:cover; background-repeat:no-repeat; background-position:center center;
     }
-    caption {
-      font-size: 1.3em;
-      font-weight: bold;
-      margin-bottom: 10px;
+    .redondo{ border-radius:50%; }
+
+    /* ====== Panel predictor (sin mapa) ====== */
+    .predictor{
+      max-width: 640px;
+      margin: 10px auto;
+      text-align: left;
+      background: #ffffff;
+      color: #111;
+      border-radius: 14px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.18);
+      padding: 14px 16px;
     }
-    th, td {
-      border: 1px solid #333;
-      padding: 1px;
-      text-align: center;
-    }
-
-
-    /* La celda del mapa sin padding para que el mapa ocupe al 100% */
-    td.map-cell{ padding: 0; }
-
-    /* Contenedor del mapa dentro de la celda */
-    #map{
-      width: 100%;
-      height: 220px;        /* ajusta la altura a tu gusto */
-      display: block;
-    }
-    div {
-  border-radius: 15px;
-}
-
-    body {
-  background-image: url('./marcelo/img/fondo1.jpg'); /* Cambia la ruta si tu imagen está en otro lugar */
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center center;
-}
-
-  map-mobile {
-      width: 300px;
-      height: 200px;
-      
-  }
-
-@media (max-width: 767px) { /* Adjust the pixel value for your breakpoint */
-  map-mobile {
-      width: 50%;
-      height: 200px;
-      
-  }
-}
-.redondo {
-  border-radius: 50%;
-}
+    .predictor h3{ margin:0 0 6px 0; font-size:18px; }
+    .predictor .coord{ font-size:13px; color:#666; margin-bottom:8px; }
+    .predictor .grid{ display:grid; grid-template-columns: 1fr auto; row-gap:6px; column-gap:8px; }
+    .predictor .k{ color:#444; }
+    .predictor .v{ font-weight:600; }
+    .predictor .badge{ display:inline-block; font-size:11px; padding:2px 6px; border-radius:999px; background:#eef; color:#223; margin-left:6px; }
+    .predictor .status{ margin-top:8px; font-size:12px; color:#444; }
+    .predictor .loading{ animation:pulse 1s infinite; }
+    @keyframes pulse { 0%{opacity:.6} 50%{opacity:1} 100%{opacity:.6} }
   </style>
 </head>
 <body>
-  
 
   <table>
-    
-    <!-- Hace la columna del medio más ancha para el mapa -->
     <colgroup>
       <col style="width: 15%;">
       <col style="width: 70%;">  <!-- mapa -->
@@ -87,119 +60,184 @@
 
     <thead>
       <tr>
-        
         <td>
           <div>
-          <img src="./Luis/img/logo1.jpg" class="redondo" alt="Logo1" height="120" width="120" style="position:relative;">
-        </div>
+            <img src="./Luis/img/logo1.jpg" class="redondo" alt="Logo1" height="120" width="120">
+          </div>
         </td>
-
-
         <td><h1 style="text-align:center;">WEBAPP TERRACLIMA</h1></td>
-
-        <td><img src="./Luis/img/logo3.jpeg" class="redondo" alt="Logo2" height="120" width="120" style="position: relative;"></td>
+        <td><img src="./Luis/img/logo3.jpeg" class="redondo" alt="Logo2" height="120" width="120"></td>
       </tr>
     </thead>
 
     <tbody>
       <tr>
         <td></td>
-        <!-- AQUÍ VA EL MAPA (fila 1, columna 2) -->
+        <!-- MAPA (fila 1, columna 2) -->
         <td class="map-cell">
-          <div class="map-mobile">
-          <div id="map" aria-label="Mapa (Leaflet)" ></div>
+          <div id="map" aria-label="Mapa (Leaflet)"></div>
+        </td>
+        <td></td>
+      </tr>
+
+      <tr style="height: 10px;"><td></td><td></td><td></td></tr>
+
+      <tr>
+        <td></td>
+        <td>
+          <!-- Calendario existente -->
+          <div class="calendar-container">
+            <header class="calendar-header">
+              <p class="calendar-current-date"></p>
+              <div class="calendar-navigation">
+                <span id="calendar-prev" class="material-symbols-rounded"></span>
+                <span id="calendar-next" class="material-symbols-rounded"></span>
+              </div>
+            </header>
+            <div class="calendar-body">
+              <ul class="calendar-weekdays">
+                <li>Sun</li><li>Mon</li><li>Tue</li><li>Wed</li><li>Thu</li><li>Fri</li><li>Sat</li>
+              </ul>
+              <ul class="calendar-dates"></ul>
+            </div>
           </div>
         </td>
         <td></td>
       </tr>
-      <tr style="height: 10px;">
-        <td>
 
-        </td>
-      </tr>
+      <!-- ⬇️ AQUÍ VA EL PREDICTOR (sin mapa) -->
       <tr>
         <td></td>
         <td>
-            <div class="calendar-container">
-                <header class="calendar-header">
-                    <p class="calendar-current-date"></p>
-                    <div class="calendar-navigation">
-                        <span id="calendar-prev" 
-                            class="material-symbols-rounded">
-                            
-                        </span>
-                        <span id="calendar-next" 
-                            class="material-symbols-rounded">
-                            
-                        </span>
-                    </div>
-                </header>
-
-                <div class="calendar-body">
-                    <ul class="calendar-weekdays">
-                        <li>Sun</li>
-                        <li>Mon</li>
-                        <li>Tue</li>
-                        <li>Wed</li>
-                        <li>Thu</li>
-                        <li>Fri</li>
-                        <li>Sat</li>
-                    </ul>
-                    <ul class="calendar-dates"></ul>
-                </div>
+          <div class="predictor" id="predictor">
+            <h3>Clima (NASA POWER) <span class="badge" id="p-date">—</span></h3>
+            <div class="coord" id="p-coord">Selecciona una ubicación en el mapa de arriba.</div>
+            <div class="grid">
+              <div class="k">T2M (media)</div>     <div class="v" id="p-t2m">—</div>
+              <div class="k">T2M_MAX</div>         <div class="v" id="p-t2mmax">—</div>
+              <div class="k">T2M_MIN</div>         <div class="v" id="p-t2mmin">—</div>
+              <div class="k">Precipitación</div>   <div class="v" id="p-prec">—</div>
+              <div class="k">Viento (10 m)</div>   <div class="v" id="p-wind">—</div>
             </div>
+            <div class="status" id="p-status">Listo.</div>
+          </div>
         </td>
         <td></td>
       </tr>
-      <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-      </tr>
-      <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-      </tr>
+
+      <tr><td></td><td></td><td></td></tr>
     </tbody>
   </table>
 
-
   <script src="./Luis/js/script.js"></script>
+
   <script>
-        // Comprobar que Leaflet cargó correctamente
+    // ========= MAPA =========
     console.log('Leaflet version:', L && L.version);
-
-    // Crear mapa centrado en el mundo
     const map = L.map('map').setView([0, 0], 2);
-
-    // Capa base (OpenStreetMap)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors'
+      maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Variable global para el marcador
-    let marker;
+    let marker; // único pin
 
-    // Evento: clic en el mapa
     map.on('click', (e) => {
-      const lat = e.latlng.lat.toFixed(6);
-      const lon = e.latlng.lng.toFixed(6);
+      const lat = +e.latlng.lat.toFixed(6);
+      const lon = +e.latlng.lng.toFixed(6);
 
-      console.log(`Coordenadas seleccionadas: ${lat}, ${lon}`);
+      if (marker) marker.setLatLng(e.latlng);
+      else marker = L.marker(e.latlng).addTo(map);
 
-      // Si ya existe un marcador, muévelo
-      if (marker) {
-        marker.setLatLng(e.latlng);
-      } else {
-        // Si no, créalo
-        marker = L.marker(e.latlng).addTo(map);
-      }
-
-      // Mostrar popup con las coordenadas
       marker.bindPopup(`Lat: ${lat}<br>Lon: ${lon}`).openPopup();
+      updatePredictor(lat, lon); // <-- actualiza el panel sin mapa
     });
+
+    // ========= PREDICTOR (NASA POWER) =========
+    const el = {
+      date:  document.getElementById('p-date'),
+      coord: document.getElementById('p-coord'),
+      t2m:   document.getElementById('p-t2m'),
+      t2mmax:document.getElementById('p-t2mmax'),
+      t2mmin:document.getElementById('p-t2mmin'),
+      prec:  document.getElementById('p-prec'),
+      wind:  document.getElementById('p-wind'),
+      status:document.getElementById('p-status')
+    };
+
+    const fmtYYYYMMDD = d => {
+      const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0');
+      return `${y}${m}${dd}`;
+    };
+    function lastNDaysRange(n=15){ // más días para evitar -999
+      const today=new Date();
+      const end=new Date(today);  end.setDate(end.getDate()-1);
+      const start=new Date(today); start.setDate(start.getDate()-n);
+      return { start: fmtYYYYMMDD(start), end: fmtYYYYMMDD(end) };
+    }
+    const isoFromYYYYMMDD = s => `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;
+    const safeNum = v => Number.isFinite(+v) ? +v : null;
+
+    function setStatus(msg, loading=false){
+      el.status.textContent = msg;
+      el.status.classList.toggle('loading', loading);
+    }
+    function clearVals(){
+      el.t2m.textContent = el.t2mmax.textContent = el.t2mmin.textContent =
+      el.prec.textContent = el.wind.textContent = '—';
+      el.date.textContent = '—';
+    }
+
+    async function updatePredictor(lat, lon){
+      el.coord.textContent = `Ubicación: ${lat}, ${lon}`;
+      setStatus('Consultando NASA POWER…', true);
+      clearVals();
+
+      const { start, end } = lastNDaysRange(15);
+      const params = ['T2M','T2M_MAX','T2M_MIN','PRECTOTCORR','WS10M'].join(',');
+      const url = new URL('https://power.larc.nasa.gov/api/temporal/daily/point');
+      url.search = new URLSearchParams({
+        parameters: params, community: 'ag',
+        longitude: lon, latitude: lat,
+        start, end, format: 'JSON'
+      });
+
+      try{
+        const r = await fetch(url, { mode: 'cors' });
+        if(!r.ok) throw new Error(`HTTP ${r.status}`);
+        const data = await r.json();
+        const param = data?.properties?.parameter || {};
+
+        // Buscar la fecha válida más reciente (evitar -999)
+        const dates = new Set();
+        Object.values(param).forEach(obj => { if(obj) for(const d in obj) dates.add(d); });
+        const valid = [...dates].filter(d => {
+          const t = param.T2M?.[d];
+          return t != null && t > -900; // descarta códigos -999
+        });
+        if(!valid.length) throw new Error('Sin datos válidos recientes en este punto.');
+
+        const latest = valid.sort().pop();
+        const iso = isoFromYYYYMMDD(latest);
+
+        const T2M     = safeNum(param.T2M?.[latest]);
+        const T2M_MAX = safeNum(param.T2M_MAX?.[latest]);
+        const T2M_MIN = safeNum(param.T2M_MIN?.[latest]);
+        const PREC    = safeNum(param.PRECTOTCORR?.[latest]);
+        const WIND    = safeNum(param.WS10M?.[latest]);
+
+        el.date.textContent = iso;
+        el.t2m.textContent   = T2M     != null ? `${T2M.toFixed(1)} °C`     : '—';
+        el.t2mmax.textContent= T2M_MAX != null ? `${T2M_MAX.toFixed(1)} °C` : '—';
+        el.t2mmin.textContent= T2M_MIN != null ? `${T2M_MIN.toFixed(1)} °C` : '—';
+        el.prec.textContent  = PREC    != null ? `${PREC.toFixed(1)} mm/día`: '—';
+        el.wind.textContent  = WIND    != null ? `${WIND.toFixed(1)} m/s`    : '—';
+
+        setStatus(`Datos de ${iso}.`, false);
+      }catch(err){
+        console.error(err);
+        setStatus('No se pudieron obtener datos (CORS/red o sin cobertura).', false);
+      }
+    }
   </script>
 </body>
 </html>
