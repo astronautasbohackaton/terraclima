@@ -45,7 +45,8 @@ section {
 
 /* Contenedor principal de CADA widget */
 .parent {
-    width: 250px; 
+    width: 250px;
+    height: 400px;
     padding: 20px;
     /* Hacemos el fondo del widget semi-transparente para que se vea el fondo de la sección */
     background: rgba(108, 117, 125, 0.85); /* Gris/Azul con 85% de opacidad */

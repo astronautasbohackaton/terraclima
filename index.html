@@ -13,6 +13,11 @@
   <link rel="stylesheet" href="./src/styles/Mapa.css">
   <!-- Widgets -->
   <link rel="stylesheet" href="./src/styles/Widget.css">
+  <!-- Angela -->
+  <link rel="stylesheet" href="./angela/stylex.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- Fuentes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -108,6 +113,17 @@
         <td><input id="id_input_fecha_inicio" type="text" placeholder="Escribe aquí" value="" hidden="true"/>
 <input id="id_input_fecha_fin" type="text" placeholder="Escribe aquí" value="" hidden="true"/>
 <input id="id_input_fecha_format" type="text" placeholder="Escribe aquí" value=""/>
+
+<div class="predictor" id="predictor">
+    <h3>Clima (NASA POWER) <span class="badge" id="p-datea">—</span></h3>
+    <div class="coord" id="p-coorda">Selecciona una ubicación en el mapa de arriba.</div>
+    <div class="grid">
+      <div class="k">T2M (media)</div>     <div class="v" id="p-t2ma">—</div>
+    </div>
+    <div class="status" id="p-statusa">Listo.</div>
+    <canvas id="tempChart" style="max-width: 800px; margin-top:20px;"></canvas>
+</div>
+
   </td>
         <td></td>
          </tr>
@@ -207,6 +223,7 @@
   <script src="./src/scripts/calendario.js"></script>
   <!-- MAPA Y NASA API -->
   <script src="./src/scripts/mapa.js"></script>
+  <script src="./angela/script.js"></script>
   <!-- WIDGETS -->
    <!-- script de prueba, invocar con: data-nasa-param="WS10M", data-nasa-param="PRECTOTCORR" -->
   <!-- <script src="./src/scripts/widget.js"></script> -->
