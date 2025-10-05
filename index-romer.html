@@ -13,89 +13,70 @@
     <title>Document</title>
 </head>
 <body>
-    <table border="1">
-
-        <tr>
-            <td>Ordenador portátil</td>
-            <td>$800</td>
-            <td>En stock</td>
-        </tr>
-        <tr>
-            <td>Smartphone</td>
-            <td>$200</td>
-            <td>Agotado</td>
-        </tr>
-        <tr>
-            <td>Auriculares</td>
-            <td>
-                <div class="widget-container">
-                    <div class="widgets-container">
-    
-                        <div class="parent">
-                            <div class="subparent">
-                                <h2 class="location">Mexico City</h2>
-                                <div class="main-display">
-                                    <img class="icon-main" src="/src/widget/sol-256.png" alt="Icono de sol">
-                                    
-                                </div>
-
-                                <div class="details-grid">
-                                    <h1 class="temperature">
-                                        17°C
-                                    </h1>
-                                    
-                                </div>
-                            </div>
+    <!-- ESTA ES TODA MI SECCION -->
+        <div class="widget-container">
+            <div class="widgets-container">
+                <!-- primera card -->
+                <div class="parent">
+                    <div class="subparent">
+                        <h2 class="location">Mexico City</h2>
+                        <div class="main-display">
+                            <img class="icon-main" src="/romer/src/widget/sol-256.png" alt="Icono de sol">
                         </div>
-
-                        <div class="parent">
-                            <div class="subparent">
-                                <h2 class="location">Precipitacion</h2>
-                                <div class="main-display">
-                                    <img class="icon-main" src="/src/widget/lluvia-256.png" alt="Icono de sol">
-                                    
-                                </div>
-
-                                <div class="details-grid">
-                                    <h1 class="">
-                                        4 mm
-                                    </h1>
-                                    <h1 class="">
-                                        30 %
-                                    </h1>
-
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="parent">
-                            <div class="subparent">
-                                <h2 class="location">viento</h2>
-                                <div class="main-display">
-                                    <img class="icon-main" src="/src/widget/viento-256.png" alt="Icono de sol">
-                                    
-                                </div>
-
-                                <div class="details-grid">
-                                    
-                                    <h1 class="">
-                                        9km/h
-                                    </h1>
-                                    <h1 class="">
-                                        215
-                                    </h1>
-                                   
-                                    
-                                </div>
-                            </div>
+                        <div class="details-grid">
+                            <h1 class="temperature" data-nasa-param="T2M">
+                            </h1>
                         </div>
                     </div>
                 </div>
+                <!-- segunda card -->
+                <div class="parent">
+                    <div class="subparent">
+                        <h2 class="location">Precipitación</h2>
+                        <div class="main-display">
+                            <img class="icon-main" src="/romer/src/widget/lluvia-256.png" alt="Icono de lluvia">
+                        </div>
+                        <div class="details-grid">
+                            <h1 class="precipitation" data-nasa-param="PRECTOTCORR">
+                            </h1>
+                        </div>
+
+                        <h2 class="location">Humedad Relativa</h2>
+                        <div class="main-display">
+                            <img class="icon-main" src="/romer/src/widget/humedad-256.png" alt="Icono de nubes">
+                        </div>
+                        <div class="details-grid">
+                            <h1 class="relative-humidity" data-nasa-param="RH2M">
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+                <!-- tercera card -->
+                <div class="parent">
+                    <div class="subparent">
+                        <h2 class="location">Velocidad del viento</h2>
+                        <div class="main-display">
+                            <img class="icon-main" src="/romer/src/widget/viento-256.png" alt="Icono de viento">
+                        </div>
+                        <div class="details-grid">
+                            <h1 class="wind-speed" data-nasa-param="WS10M">
+                            </h1>
+                        </div>
+
+                        <h2 class="location">Presión Atmosférica</h2>
+                        <div class="main-display">
+                            <img class="icon-main" src="/romer/src/widget/presion-256.png" alt="Icono de presión">
+                        </div>
+                        <div class="details-grid">
+                            <h1 class="surface-pressure" data-nasa-param="PS">
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
               
-            </td>
-            <td>En stock</td>
-        </tr>
-    </table>
+            
 
     <script src="/romer/js/main-romer.js"></script>
 </body>

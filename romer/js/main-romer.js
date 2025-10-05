@@ -1,56 +1,46 @@
-// Coordenadas de la Ciudad de México
-        const LATITUDE = 19.4326;
-        const LONGITUDE = -99.1332;
+// La fecha del JSON que recibimos
+const TARGET_DATE = '20250925'; 
+
+// SIMULACIÓN: Objeto JSON con los datos extraídos de la API de NASA POWER
+const NASA_DATA = {
+    "T2M": 15.55,       // Temperatura en Celsius
+    "PS": 77.23,        // Presión en kPa
+    "RH2M": 83.09,      // Humedad Relativa en %
+    "WS10M": 1.14,      // Velocidad del Viento en m/s
+    "PRECTOTCORR": 10.91 // Precipitación en mm/día
+};
+
+function actualizarWidget(data) {
+    // === TARJETA 1: TEMPERATURA ===
+    const tempValue = data.T2M.toFixed(1);
+    document.querySelector('.temperature').textContent = `${tempValue}°C`;
+    
+    // === TARJETA 2: PRECIPITACIÓN Y HUMEDAD ===
+    const precipValue = data.PRECTOTCORR.toFixed(2);
+    document.querySelector('.precipitation').textContent = `${precipValue} mm`;
+
+    const humidityValue = data.RH2M.toFixed(2);
+    document.querySelector('.relative-humidity').textContent = `${humidityValue} %`;
+
+    // === TARJETA 3: VIENTO Y PRESIÓN ===
+    const windSpeedValue = data.WS10M.toFixed(2);
+    document.querySelector('.wind-speed').textContent = `${windSpeedValue} m/s`;
+    
+    const pressureValue = data.PS.toFixed(2);
+    document.querySelector('.surface-pressure').textContent = `${pressureValue} kPa`;
+}
+
+// Función que simularía la llamada a la API y el procesamiento
+function cargarDatosClima() {
+  
+    const processedData = {};
+    for (const key in NASA_DATA) {
         
-        // Formatea la fecha de hoy como YYYYMMDD
-        const today = new Date();
-        const yyyymmdd = today.toISOString().slice(0, 10).replace(/-/g, '');
+        processedData[key] = NASA_DATA[key]; 
+    }
+    
+    actualizarWidget(processedData);
 
-        // Construye la URL de la API de NASA POWER para obtener la temperatura (T2M)
-        // Comunidades de energía o agroclimatología (AG) son comunes para T2M
-        const NASA_POWER_URL = `https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M&community=AG&longitude=${LONGITUDE}&latitude=${LATITUDE}&start=${yyyymmdd}&end=${yyyymmdd}&format=JSON`;
+}
 
-        const tempElement = document.getElementById('temperatura');
-        const statusElement = document.getElementById('estado-cors');
-
-        function obtenerTemperaturaNASA() {
-            statusElement.textContent = 'Intentando conectar a la API de NASA...';
-
-            fetch(NASA_POWER_URL)
-                .then(response => {
-                    // Aunque la solicitud falle por CORS, esta promesa A VECES se resuelve
-                    // (si el error ocurre después del "vuelo previo"), pero la respuesta.ok
-                    // probablemente sea falsa o simplemente no se pueda acceder al contenido.
-                    
-                    // Si el error CORS es el que esperamos, el código saltará directamente al .catch.
-                    if (!response.ok) {
-                        // Intentamos procesar la respuesta, pero si falla por CORS...
-                        // el código JavaScript no podrá leer el cuerpo de la respuesta.
-                        console.error("Respuesta HTTP no OK. Esto podría ser CORS.");
-                        statusElement.textContent = 'Error: Respuesta HTTP inicial no satisfactoria.';
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // Si llegamos aquí, ¡el CORS NO falló! (Lo cual es improbable)
-                    
-                    // Extraer la temperatura T2M
-                    const tempKelvin = data.properties.parameter.T2M[yyyymmdd];
-                    // Convertir a Celsius (Kelvin - 273.15)
-                    const tempCelsius = (tempKelvin - 273.15).toFixed(1); 
-
-                    tempElement.textContent = `${tempCelsius}°C`;
-                    statusElement.textContent = 'Éxito: Datos obtenidos (¡CORS NO falló, muy inusual!)';
-                })
-                .catch(error => {
-                    // Este es el punto de falla esperado debido a CORS.
-                    tempElement.textContent = '??°C';
-                    console.error('--- ERROR CORS ESPERADO ---');
-                    console.error('El navegador bloqueó la solicitud o el acceso a la respuesta:');
-                    console.error(error);
-                    statusElement.textContent = '🔴 ERROR CORS: Revisa la Consola del Navegador.';
-                    statusElement.style.color = 'red';
-                });
-        }
-
-        document.addEventListener('DOMContentLoaded', obtenerTemperaturaNASA);
+document.addEventListener('DOMContentLoaded', cargarDatosClima);
