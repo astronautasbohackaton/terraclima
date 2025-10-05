@@ -16,7 +16,7 @@
 
     /* Fondo */
     body{
-      background-image:url('../../../marcelo/img/fondo1.jpg');
+      background-image:url('./img/fondo1.jpg');
       background-size:cover; background-repeat:no-repeat; background-position:center center;
     }
 
