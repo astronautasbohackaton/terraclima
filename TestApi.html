@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Leaflet + NASA POWER (clic para clima)</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    :root { --bg:#0d3b66; --card:#ffffff; --text:#111; --muted:#666; }
+    html, body { height:100%; margin:0; font-family: system-ui, -apple-system, Arial, sans-serif; }
+    #map { height: 100%; }
+    .panel {
+      position: fixed; top: 16px; left: 16px; max-width: 320px;
+      background: var(--card); color: var(--text); border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.2); padding: 14px 16px; z-index: 1000;
+    }
+    .panel h2 { margin: 0 0 6px 0; font-size: 18px; }
+    .panel .coord { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+    .row { display:flex; justify-content:space-between; margin:6px 0; }
+    .row .k { color:#555; }
+    .row .v { font-weight:600; }
+    .status { margin-top: 10px; font-size: 13px; color:#444; }
+    .badge { display:inline-block; font-size:11px; padding:2px 6px; border-radius:999px; background:#eef; color:#223; margin-left:6px; }
+    .loading { animation: pulse 1s infinite; }
+    @keyframes pulse { 0%{opacity:0.6} 50%{opacity:1} 100%{opacity:0.6} }
+    .footer { margin-top:8px; font-size:11px; color:#666; }
+    .btn {
+      display:inline-block; background: var(--bg); color:#fff; border:0; border-radius:8px;
+      padding:6px 10px; font-size:13px; cursor:pointer; margin-top:8px;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- Panel de datos -->
+  <div class="panel" id="panel">
+    <h2>Clima (NASA POWER) <span class="badge" id="badge-date">—</span></h2>
+    <div class="coord" id="coord">Haz clic en el mapa para seleccionar ubicación</div>
+
+    <div class="row"><div class="k">T2M (media)</div><div class="v" id="t2m">—</div></div>
+    <div class="row"><div class="k">T2M_MAX</div><div class="v" id="t2m_max">—</div></div>
+    <div class="row"><div class="k">T2M_MIN</div><div class="v" id="t2m_min">—</div></div>
+    <div class="row"><div class="k">PRECTOTCORR</div><div class="v" id="prec">—</div></div>
+    <div class="row"><div class="k">WS10M</div><div class="v" id="wind">—</div></div>
+
+    <div class="status" id="status">Listo. Clic en cualquier punto del mapa.</div>
+    <button class="btn" id="btn-geoloc">Centrar en mi ubicación</button>
+
+    <div class="footer">Fuente: NASA POWER (diario). OSM/Leaflet.</div>
+  </div>
+
+  <script>
+    // =============== Utilidades de fecha ===============
+    const fmtYYYYMMDD = d => {
+      const y=d.getFullYear();
+      const m=String(d.getMonth()+1).padStart(2,'0');
+      const dd=String(d.getDate()).padStart(2,'0');
+      return `${y}${m}${dd}`;
+    };
+    // Genera un rango [N días atrás ... ayer] para asegurar datos disponibles
+    function lastNDaysRange(n=7){
+      const today = new Date();
+      // POWER suele tener 1–3 días de retraso; pedimos 7 para cubrirnos
+      const end = new Date(today); end.setDate(end.getDate()-1);
+      const start = new Date(today); start.setDate(start.getDate()-n);
+      return { start: fmtYYYYMMDD(start), end: fmtYYYYMMDD(end) };
+    }
+    const isoFromYYYYMMDD = s => `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;
+
+    // =============== DOM refs ===============
+    const el = {
+      coord: document.getElementById('coord'),
+      status: document.getElementById('status'),
+      badgeDate: document.getElementById('badge-date'),
+      t2m: document.getElementById('t2m'),
+      t2m_max: document.getElementById('t2m_max'),
+      t2m_min: document.getElementById('t2m_min'),
+      prec: document.getElementById('prec'),
+      wind: document.getElementById('wind'),
+      btnGeo: document.getElementById('btn-geoloc'),
+    };
+
+    function setLoading(on=true, msg='Consultando NASA POWER…'){
+      el.status.textContent = msg;
+      el.status.classList.toggle('loading', on);
+    }
+    function clearValues(){
+      el.t2m.textContent = '—';
+      el.t2m_max.textContent = '—';
+      el.t2m_min.textContent = '—';
+      el.prec.textContent = '—';
+      el.wind.textContent = '—';
+      el.badgeDate.textContent = '—';
+    }
+
+    // =============== Leaflet ===============
+    const map = L.map('map', { zoomControl:true }).setView([0,0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    let marker;
+
+    // Click en el mapa → mover/crear marcador y consultar datos
+    map.on('click', async (e) => {
+      const lat = +e.latlng.lat.toFixed(6);
+      const lon = +e.latlng.lng.toFixed(6);
+
+      if (!marker) {
+        marker = L.marker([lat, lon]).addTo(map);
+      } else {
+        marker.setLatLng([lat, lon]);
+      }
+      marker.bindPopup(`Lat: ${lat}<br>Lon: ${lon}`).openPopup();
+
+      el.coord.textContent = `Ubicación: ${lat}, ${lon}`;
+      await fetchClimate(lat, lon);
+    });
+
+    // Botón: geolocalización rápida
+    el.btnGeo.addEventListener('click', ()=>{
+      if (!navigator.geolocation) {
+        el.status.textContent = 'Geolocalización no disponible en este navegador.';
+        return;
+      }
+      setLoading(true, 'Obteniendo tu ubicación…');
+      navigator.geolocation.getCurrentPosition(
+        (pos)=>{
+          const lat = +pos.coords.latitude.toFixed(6);
+          const lon = +pos.coords.longitude.toFixed(6);
+          map.setView([lat, lon], 8);
+          if (!marker) marker = L.marker([lat, lon]).addTo(map);
+          else marker.setLatLng([lat, lon]);
+          marker.bindPopup(`Lat: ${lat}<br>Lon: ${lon}`).openPopup();
+          el.coord.textContent = `Ubicación: ${lat}, ${lon}`;
+          fetchClimate(lat, lon);
+        },
+        (err)=>{
+          setLoading(false, 'No se pudo obtener tu ubicación.');
+        },
+        { enableHighAccuracy:true, timeout:8000, maximumAge:0 }
+      );
+    });
+
+    // Ajuste de tamaño en layouts dinámicos
+    setTimeout(()=>map.invalidateSize(), 0);
+    window.addEventListener('resize', ()=>map.invalidateSize());
+
+    // =============== NASA POWER ===============
+    // Importante: POWER entrega °C para T2M/T2M_MAX/T2M_MIN, mm/día para PRECTOTCORR, m/s para WS10M.
+    async function fetchClimate(lat, lon){
+      setLoading(true, 'Consultando NASA POWER…');
+      clearValues();
+
+      const { start, end } = lastNDaysRange(7);
+      const params = ['T2M','T2M_MAX','T2M_MIN','PRECTOTCORR','WS10M'].join(',');
+      const url = new URL('https://power.larc.nasa.gov/api/temporal/daily/point');
+      url.search = new URLSearchParams({
+        parameters: params,
+        community: 'ag',
+        longitude: lon,
+        latitude: lat,
+        start,
+        end,
+        format: 'JSON'
+      });
+
+      try {
+        const r = await fetch(url.toString(), { mode: 'cors' });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const data = await r.json();
+
+        const param = data?.properties?.parameter || {};
+        // Encontrar la fecha más reciente disponible dentro del rango
+        const allDates = new Set();
+        Object.values(param).forEach(obj => { if (obj) for (const d in obj) allDates.add(d); });
+        if (allDates.size === 0) throw new Error('Sin datos en el rango consultado.');
+
+        // Dentro de fetchClimate(), después de obtener param
+        const validDates = [...allDates].filter(d => {
+          const t = param.T2M?.[d];
+          return t != null && t > -900; // evita -999
+        });
+        if (validDates.length === 0) throw new Error('Sin datos válidos.');
+        const latest = validDates.sort().pop(); // último YYYYMMDD
+        const iso = isoFromYYYYMMDD(latest);
+
+        // Extraer valores (pueden venir undefined si justo no hay ese parámetro ese día)
+        const T2M       = safeNum(param.T2M?.[latest]);
+        const T2M_MAX   = safeNum(param.T2M_MAX?.[latest]);
+        const T2M_MIN   = safeNum(param.T2M_MIN?.[latest]);
+        const PREC      = safeNum(param.PRECTOTCORR?.[latest]);
+        const WIND      = safeNum(param.WS10M?.[latest]);
+
+        // Render
+        el.badgeDate.textContent = iso;
+        if (T2M      != null) el.t2m.textContent    = `${T2M.toFixed(1)} °C`;        else el.t2m.textContent    = '—';
+        if (T2M_MAX  != null) el.t2m_max.textContent= `${T2M_MAX.toFixed(1)} °C`;    else el.t2m_max.textContent= '—';
+        if (T2M_MIN  != null) el.t2m_min.textContent= `${T2M_MIN.toFixed(1)} °C`;    else el.t2m_min.textContent= '—';
+        if (PREC     != null) el.prec.textContent   = `${PREC.toFixed(1)} mm/día`;   else el.prec.textContent   = '—';
+        if (WIND     != null) el.wind.textContent   = `${WIND.toFixed(1)} m/s`;      else el.wind.textContent   = '—';
+
+        setLoading(false, `Datos de ${iso}.`);
+      } catch (err) {
+        console.error('POWER error:', err);
+        setLoading(false, 'No se pudieron obtener datos. ¿Problemas de CORS o red?');
+      }
+    }
+
+    function safeNum(v){
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    }
+  </script>
+</body>
+</html>
