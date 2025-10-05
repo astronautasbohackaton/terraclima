@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WEBAPP TERRACLIMA</title>
+
+  <!-- Leaflet (CSS + JS) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Estilos Calendario -->
+  <link rel="stylesheet" href="./marcelo/public/styles/Calendar.css">
+  <!--  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,
+        FILL,GRAD@20..48,100..700,0..1,-50..200">-->
+  <style>
+    /* ====== Estilos tabla ====== */
+    table{
+      width: 90%;
+      border-collapse: collapse;
+      margin: 20px auto;
+      font-family: Arial, sans-serif;
+      table-layout: fixed; /* para respetar colgroup */
+    }
+    caption {
+      font-size: 1.3em;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    th, td {
+      border: 1px solid #333;
+      padding: 1px;
+      text-align: center;
+    }
+
+
+    /* La celda del mapa sin padding para que el mapa ocupe al 100% */
+    td.map-cell{ padding: 0; }
+
+    /* Contenedor del mapa dentro de la celda */
+    #map{
+      width: 100%;
+      height: 220px;        /* ajusta la altura a tu gusto */
+      display: block;
+    }
+    div {
+  border-radius: 15px;
+}
+
+    body {
+  background-image: url('./marcelo/img/fondo1.jpg'); /* Cambia la ruta si tu imagen está en otro lugar */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+  map-mobile {
+      width: 300px;
+      height: 200px;
+      
+  }
+
+@media (max-width: 767px) { /* Adjust the pixel value for your breakpoint */
+  map-mobile {
+      width: 50%;
+      height: 200px;
+      
+  }
+}
+.redondo {
+  border-radius: 50%;
+}
+  </style>
+</head>
+<body>
+  
+
+  <table>
+    
+    <!-- Hace la columna del medio más ancha para el mapa -->
+    <colgroup>
+      <col style="width: 15%;">
+      <col style="width: 70%;">  <!-- mapa -->
+      <col style="width: 15%;">
+    </colgroup>
+
+    <thead>
+      <tr>
+        
+        <td>
+          <div>
+          <img src="./marcelo/img/logo1.jpg" class="redondo" alt="Logo1" height="120" width="120" style="position:relative;">
+        </div>
+        </td>
+
+
+        <td><h1 style="text-align:center;">WEBAPP TERRACLIMA</h1></td>
+
+        <td><img src="./marcelo/img/logo3.jpeg" class="redondo" alt="Logo2" height="120" width="120" style="position: relative;"></td>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr>
+        <td></td>
+        <!-- AQUÍ VA EL MAPA (fila 1, columna 2) -->
+        <td class="map-cell">
+          <div class="map-mobile">
+          <div id="map" aria-label="Mapa (Leaflet)" ></div>
+          </div>
+        </td>
+        <td></td>
+      </tr>
+      <tr style="height: 10px;">
+        <td></td>
+        <td>
+<input id="id_input_latitud" type="text" placeholder="Escribe aquí" value="" />
+<input id="id_input_longitud" type="text" placeholder="Escribe aquí" value="" />
+        </td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>
+            <div class="calendar-container">
+                <header class="calendar-header">
+                    <p class="calendar-current-date"></p>
+                    <div class="calendar-navigation">
+                        <span id="calendar-prev" 
+                            class="material-symbols-rounded">
+                            
+                        </span>
+                        <span id="calendar-next" 
+                            class="material-symbols-rounded">
+                            
+                        </span>
+                    </div>
+                </header>
+
+                <div class="calendar-body">
+                    <ul class="calendar-weekdays">
+                        <li>Sun</li>
+                        <li>Mon</li>
+                        <li>Tue</li>
+                        <li>Wed</li>
+                        <li>Thu</li>
+                        <li>Fri</li>
+                        <li>Sat</li>
+                    </ul>
+                    <ul class="calendar-dates"></ul>
+                </div>
+            </div>
+        </td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>    <div class="widget-test">
+        <h2>Temperatura de NASA POWER</h2>
+        <p>Ubicación: Ciudad de México (19.43, -99.13)</p>
+        <h1 id="temperatura">Cargando...</h1>
+        <p class="estado" id="estado-cors">Revisando conexión...</p>
+    </div></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+<script>
+        // Coordenadas de la Ciudad de México
+        const LATITUDE = 19.4326;
+        const LONGITUDE = -99.1332;
+        
+        // Formatea la fecha de hoy como YYYYMMDD
+        //const today = new Date();
+        //const yyyymmdd = today.toISOString().slice(0, 10).replace(/-/g, '');
+         const yyyymmdd = '20250925';
+        // Construye la URL de la API de NASA POWER para obtener la temperatura (T2M)
+        // Comunidades de energía o agroclimatología (AG) son comunes para T2M
+        const NASA_POWER_URL = `https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M&community=AG&longitude=${LONGITUDE}&latitude=${LATITUDE}&start=${yyyymmdd}&end=${yyyymmdd}&format=JSON`;
+
+        const tempElement = document.getElementById('temperatura');
+        const statusElement = document.getElementById('estado-cors');
+
+        function obtenerTemperaturaNASA() {
+            statusElement.textContent = 'Intentando conectar a la API de NASA...';
+
+            fetch(NASA_POWER_URL)
+                .then(response => {
+                    // Aunque la solicitud falle por CORS, esta promesa A VECES se resuelve
+                    // (si el error ocurre después del "vuelo previo"), pero la respuesta.ok
+                    // probablemente sea falsa o simplemente no se pueda acceder al contenido.
+                    
+                    // Si el error CORS es el que esperamos, el código saltará directamente al .catch.
+                    if (!response.ok) {
+                        // Intentamos procesar la respuesta, pero si falla por CORS...
+                        // el código JavaScript no podrá leer el cuerpo de la respuesta.
+                        console.error("Respuesta HTTP no OK. Esto podría ser CORS.");
+                        statusElement.textContent = 'Error: Respuesta HTTP inicial no satisfactoria.';
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Si llegamos aquí, ¡el CORS NO falló! (Lo cual es improbable)
+                    
+                    // Extraer la temperatura T2M
+                    const tempKelvin = data.properties.parameter.T2M[yyyymmdd];
+                    // Convertir a Celsius (Kelvin - 273.15)
+                    const tempCelsius = (tempKelvin).toFixed(1); 
+
+                    tempElement.textContent = `${tempCelsius}°C`;
+                    statusElement.textContent = 'Éxito: Datos obtenidos (¡CORS NO falló, muy inusual!)';
+                })
+                .catch(error => {
+                    // Este es el punto de falla esperado debido a CORS.
+                    tempElement.textContent = '??°C';
+                    console.error('--- ERROR CORS ESPERADO ---');
+                    console.error('El navegador bloqueó la solicitud o el acceso a la respuesta:');
+                    console.error(error);
+                    statusElement.textContent = '🔴 ERROR CORS: Revisa la Consola del Navegador.';
+                    statusElement.style.color = 'red';
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', obtenerTemperaturaNASA);
+    </script>
+  <script src="./marcelo/js/script.js"></script>
+  <script>
+        // Comprobar que Leaflet cargó correctamente
+    console.log('Leaflet version:', L && L.version);
+
+    // Crear mapa centrado en el mundo
+    const map = L.map('map').setView([0, 0], 2);
+
+    // Capa base (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Variable global para el marcador
+    let marker;
+
+    // Evento: clic en el mapa
+    map.on('click', (e) => {
+      const lat = e.latlng.lat.toFixed(6);
+      const lon = e.latlng.lng.toFixed(6);
+
+      console.log(`Coordenadas seleccionadas: ${lat}, ${lon}`);
+
+      // Si ya existe un marcador, muévelo
+      if (marker) {
+        marker.setLatLng(e.latlng);
+      } else {
+        // Si no, créalo
+        marker = L.marker(e.latlng).addTo(map);
+      }
+
+      // Mostrar popup con las coordenadas
+      marker.bindPopup(`Lat: ${lat}<br>Lon: ${lon}`).openPopup();
+    });
+  </script>
+</body>
+</html>

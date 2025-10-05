@@ -1,93 +1,102 @@
-// ====== Calendario básico (prev/next, hoy, inactivos, selección) ======
-(function(){
-  const container = document.querySelector('.calendar-container');
-  if (!container) return;
+let date = new Date();
+let year = date.getFullYear();
+let month = date.getMonth();
 
-  const currentEl = container.querySelector('.calendar-current-date');
-  const datesEl   = container.querySelector('.calendar-dates');
-  const prevBtn   = container.querySelector('#calendar-prev');
-  const nextBtn   = container.querySelector('#calendar-next');
+const day = document.querySelector(".calendar-dates");
+const currdate = document.querySelector(".calendar-current-date");
+const prenexIcons = document.querySelectorAll(".calendar-navigation span");
 
-  // Estado interno (mes/año actuales mostrados)
-  let viewDate = new Date();
-  viewDate.setDate(1); // primer día del mes
+const months = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
 
-  // Día seleccionado (opcional)
-  let selected = null; // { y:2025, m:9, d:4 } por ejemplo
+let clickedDay = null;
+let selectedDayElement = null;
 
-  function render(){
-    const year  = viewDate.getFullYear();
-    const month = viewDate.getMonth(); // 0-11
+const manipulate = () => {
+  let dayone = new Date(year, month, 1).getDay();
+  let lastdate = new Date(year, month + 1, 0).getDate();
+  let dayend = new Date(year, month, lastdate).getDay();
+  let monthlastdate = new Date(year, month, 0).getDate();
 
-    // Título "Mes Año"
-    const monthName = viewDate.toLocaleString('es-ES', { month: 'long' });
-    currentEl.textContent = `${capitalize(monthName)} ${year}`;
+  let lit = "";
 
-    // Cálculos de calendario
-    const firstDayIndex = new Date(year, month, 1).getDay();           // 0=Domingo
-    const lastDate      = new Date(year, month+1, 0).getDate();        // días del mes actual
-    const prevLastDate  = new Date(year, month, 0).getDate();          // días del mes anterior
-    const lastDayIndex  = new Date(year, month, lastDate).getDay();
+  for (let i = dayone; i > 0; i--) {
+    lit += `<li class="inactive">${monthlastdate - i + 1}</li>`;
+  }
 
-    // Construye celdas (li)
-    const items = [];
+  
+  for (let i = 1; i <= lastdate; i++) {
+    let isToday = (i === date.getDate()
+      && month === new Date().getMonth()
+      && year === new Date().getFullYear()) ? "active" : "";
 
-    // Días previos (inactivos)
-    for (let i = firstDayIndex; i > 0; i--){
-      items.push(`<li class="inactive">${prevLastDate - i + 1}</li>`);
-    }
+    let highlightClass = (clickedDay === i) ? "highlight" : "";
 
-    // Días del mes actual
-    const today = new Date();
-    const isTodayMonth = (today.getFullYear()===year && today.getMonth()===month);
+    lit += `<li class="${isToday} ${highlightClass}" data-day="${i}">${i}</li>`;
+  }
 
-    for (let d = 1; d <= lastDate; d++){
-      const active  = isTodayMonth && d===today.getDate() ? 'active' : '';
-      const hl      = (selected && selected.y===year && selected.m===month && selected.d===d) ? 'highlight' : '';
-      items.push(`<li class="${active} ${hl}" data-day="${d}">${d}</li>`);
-    }
 
-    // Días del siguiente mes (para completar la cuadrícula)
-    for (let i = lastDayIndex; i < 6; i++){
-      items.push(`<li class="inactive">${i - lastDayIndex + 1}</li>`);
-    }
+  for (let i = dayend; i < 6; i++) {
+    lit += `<li class="inactive">${i - dayend + 1}</li>`;
+  }
 
-    datesEl.innerHTML = items.join('');
+  currdate.innerText = `${months[month]} ${year}`;
+  day.innerHTML = lit;
 
-    // Click en días del mes actual → selección
-    datesEl.querySelectorAll('li[data-day]').forEach(li=>{
-      li.addEventListener('click', ()=>{
-        const day = +li.dataset.day;
-        selected = { y:year, m:month, d:day };
-        // Re-render para aplicar .highlight
-        render();
+  addClickListenersToDays(currdate.innerText, year);
+};
 
-        // Si quieres, emite un evento custom con la fecha seleccionada:
-        const evt = new CustomEvent('calendar:dateSelected', {
-          detail: { year, month, day, iso: toISO(year, month, day) }
-        });
-        container.dispatchEvent(evt);
-      });
+
+function addClickListenersToDays( month, year) {
+  const allDays = day.querySelectorAll('li:not(.inactive)');
+  allDays.forEach(li => {
+    li.addEventListener('click', () => {
+      if (selectedDayElement) {
+        selectedDayElement.classList.remove('highlight');
+      }
+
+      li.classList.add('highlight');
+      selectedDayElement = li;
+
+      clickedDay = parseInt(li.getAttribute('data-day'));
+	  
+	  //alert ("CLICKED DAY: "+ clickedDay );
+	  //alert ("CLICKED MONTH: "+ month );
+	  // alert ("CLICKED YEAR: "+ year );
+
+const input_fecha_inicio= document.getElementById('id_input_fecha_inicio');
+input_fecha_inicio.value=clickedDay;
+const input_fecha_fin= document.getElementById('id_input_fecha_fin');
+input_fecha_fin.value=month;
+
+      console.log('Clicked day:', clickedDay);
     });
-  }
-
-  prevBtn?.addEventListener('click', ()=>{ viewDate.setMonth(viewDate.getMonth()-1); render(); });
-  nextBtn?.addEventListener('click', ()=>{ viewDate.setMonth(viewDate.getMonth()+1); render(); });
-
-  // Utilidades
-  function toISO(y, m, d){
-    const mm = String(m+1).padStart(2,'0');
-    const dd = String(d).padStart(2,'0');
-    return `${y}-${mm}-${dd}`;
-  }
-  function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
-
-  // Inicial
-  render();
-
-  // Ejemplo: escucha la fecha seleccionada (si quieres usarla)
-  container.addEventListener('calendar:dateSelected', (e)=>{
-    // console.log('Fecha elegida:', e.detail);
-    // Aquí podrías usar e.detail.iso para consultar tu API/POWER según el día.
   });
-})();
+}
+
+manipulate();
+
+prenexIcons.forEach(icon => {
+  icon.addEventListener("click", () => {
+    month = icon.id === "calendar-prev" ? month - 1 : month + 1;
+
+    if (month < 0 || month > 11) {
+      date = new Date(year, month, new Date().getDate());
+      year = date.getFullYear();
+      month = date.getMonth();
+	  
+
+    } else {
+      date = new Date();
+    }
+	
+
+
+    clickedDay = null;
+    selectedDayElement = null;
+
+    manipulate();
+  });
+});
