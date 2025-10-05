@@ -64,8 +64,8 @@
       <tr style="height: 10px;">
         <td></td>
         <td>
-<input id="id_input_latitud" type="text" placeholder="Escribe aquí" value="" />
-<input id="id_input_longitud" type="text" placeholder="Escribe aquí" value="" />
+<input id="id_input_latitud" type="text" placeholder="Escribe aquí" value="" hidden="true" />
+<input id="id_input_longitud" type="text" placeholder="Escribe aquí" value="" hidden="true"/>
         </td>
         <td></td>
       </tr>
@@ -99,17 +99,12 @@
             </div>
           </div>
         </td>
-        <td>    <div class="widget-test">
-        <h2>Temperatura de NASA POWER</h2>
-        <p>Ubicación: Ciudad de México (19.43, -99.13)</p>
-        <h1 id="temperatura">Cargando...</h1>
-        <p class="estado" id="estado-cors">Revisando conexión...</p>
-    </div></td>
+        <td>    </td>
       </tr>
       <tr>
         <td></td>
-        <td><input id="id_input_fecha_inicio" type="text" placeholder="Escribe aquí" value="" />
-<input id="id_input_fecha_fin" type="text" placeholder="Escribe aquí" value="" />
+        <td><input id="id_input_fecha_inicio" type="text" placeholder="Escribe aquí" value="" hidden="true"/>
+<input id="id_input_fecha_fin" type="text" placeholder="Escribe aquí" value="" hidden="true"/>
   </td>
         <td></td>
          </tr>
@@ -117,7 +112,7 @@
       <tr>
         <td></td>
         <td>
-          <div class="predictor" id="predictor">
+          <div class="predictor" id="predictor" hidden="true">
             <h3>Clima (NASA POWER) <span class="badge" id="p-date">—</span></h3>
             <div class="coord" id="p-coord">Selecciona una ubicación en el mapa de arriba.</div>
             <div class="grid">
