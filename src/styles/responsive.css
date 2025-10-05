@@ -1,0 +1,70 @@
+/* /src/styles/responsive.css */
+
+/* GENERAL - Para pantallas de máximo 768px (celulares y tablets) */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+    background-size: cover;
+  }
+
+  h1, h2, h3 {
+    font-size: 1rem;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  canvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Ocultar o adaptar columnas de tablas */
+  table, thead, tbody, tr, td {
+    display: block;
+    width: 100%;
+  }
+
+  /* Logos */
+  .redondo-logo {
+    width: 80px !important;
+    height: 80px !important;
+  }
+
+  /* MAPA */
+  #map {
+    width: 100% !important;
+    height: 300px !important;
+  }
+
+  /* CALENDARIO */
+  .calendar-container {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  /* WIDGETS */
+  .widget-container {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .widgets-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .parent {
+    width: 100%;
+    padding: 5px;
+  }
+
+  .main-display img,
+  .icon-main {
+    width: 60px;
+    height: 60px;
+  }
+}
