@@ -2,7 +2,7 @@
 const el = {
     date:  document.getElementById('p-date'),
     coord: document.getElementById('p-coord'),
-    t2m:   document.getElementById('p-t2m'),
+    t2m:   document.getElementById('p-t2ma'),
     status:document.getElementById('p-status')
 };
 
