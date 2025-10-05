@@ -25,7 +25,7 @@
       height: 200px;
       
   }
-    .redondo{ border-radius:50%; }
+    .redondo{ border-radius:30px; }
 
     /* ====== Panel predictor (sin mapa) ====== */
     .predictor{

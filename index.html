@@ -23,7 +23,7 @@
       background-image:url('./img/fondo1.jpg');
       background-size:cover; background-repeat:no-repeat; background-position:center center;
     }
-    .redondo{ border-radius:10px; }
+    .redondo{ border-radius:30px; }
 
   </style>
 </head>
@@ -112,7 +112,7 @@
       <!-- ⬇️ AQUÍ VA EL PREDICTOR (sin mapa) -->
       <tr>
         <td></td>
-        <td>
+        <td style="text-align: right;">
           <div class="predictor" id="predictor" hidden="true">
             <h3>Clima (NASA POWER) <span class="badge" id="p-date">—</span></h3>
             <div class="coord" id="p-coord">Selecciona una ubicación en el mapa de arriba.</div>
@@ -128,17 +128,18 @@
                 <!-- primera card -->
                 <div class="parent">
                     <div class="subparent">
-                        <h2 class="location">Mexico City</h2>
+                        <h2 class="location">Temperatura</h2>
                         <div class="main-display">
                             <img class="icon-main" src="./romer/src/widget/sol-256.png" alt="Icono de sol">
                         </div>
                         <div class="details-grid">
-                            <h1 class="temperature" id="p-t2m">
+                          <h2 class="location">Cº/Fº</h2>
+                          <h1 class="temperature" id="p-t2m">
                             </h1>
-                            <h1 class="temperature" id="p-t2mmax">
-                            </h1>
-                            <h1 class="temperature" id="p-t2mmin">
-                            </h1>
+                            <h3 class="temperature" id="p-t2mmax">
+                            </h3>
+                            <h3 class="temperature" id="p-t2mmin">
+                            </h>
                         </div>
                     </div>
                 </div>
