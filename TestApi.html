@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Leaflet + NASA POWER (clic para clima)</title>
+  <title>Leaflet + NASA POWER (clic + fecha)</title>
 
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
@@ -14,7 +14,7 @@
     html, body { height:100%; margin:0; font-family: system-ui, -apple-system, Arial, sans-serif; }
     #map { height: 100%; }
     .panel {
-      position: fixed; top: 16px; left: 16px; max-width: 320px;
+      position: fixed; top: 16px; left: 16px; max-width: 340px;
       background: var(--card); color: var(--text); border-radius: 12px;
       box-shadow: 0 6px 18px rgba(0,0,0,.2); padding: 14px 16px; z-index: 1000;
     }
@@ -23,7 +23,7 @@
     .row { display:flex; justify-content:space-between; margin:6px 0; }
     .row .k { color:#555; }
     .row .v { font-weight:600; }
-    .status { margin-top: 10px; font-size: 13px; color:#444; }
+    .status { margin-top: 8px; font-size: 12px; color:#444; }
     .badge { display:inline-block; font-size:11px; padding:2px 6px; border-radius:999px; background:#eef; color:#223; margin-left:6px; }
     .loading { animation: pulse 1s infinite; }
     @keyframes pulse { 0%{opacity:0.6} 50%{opacity:1} 100%{opacity:0.6} }
@@ -32,6 +32,9 @@
       display:inline-block; background: var(--bg); color:#fff; border:0; border-radius:8px;
       padding:6px 10px; font-size:13px; cursor:pointer; margin-top:8px;
     }
+    .controls { display:flex; gap:8px; align-items:center; margin:6px 0 8px }
+    .controls input[type="date"]{ padding:6px 8px; border:1px solid #ddd; border-radius:8px; font-size:13px; }
+    .pill { font-size:11px; padding:2px 6px; border-radius:999px; background:#ffe7a3; color:#6b4e00; margin-left:6px; }
   </style>
 </head>
 <body>
@@ -39,8 +42,13 @@
 
   <!-- Panel de datos -->
   <div class="panel" id="panel">
-    <h2>Clima (NASA POWER) <span class="badge" id="badge-date">—</span></h2>
+    <h2>Clima (NASA POWER) <span class="badge" id="badge-date">—</span><span class="pill" id="badge-mode" style="display:none"></span></h2>
     <div class="coord" id="coord">Haz clic en el mapa para seleccionar ubicación</div>
+
+    <div class="controls">
+      <input type="date" id="date">
+      <button class="btn" id="btn-geoloc">Mi ubicación</button>
+    </div>
 
     <div class="row"><div class="k">T2M (media)</div><div class="v" id="t2m">—</div></div>
     <div class="row"><div class="k">T2M_MAX</div><div class="v" id="t2m_max">—</div></div>
@@ -48,44 +56,45 @@
     <div class="row"><div class="k">PRECTOTCORR</div><div class="v" id="prec">—</div></div>
     <div class="row"><div class="k">WS10M</div><div class="v" id="wind">—</div></div>
 
-    <div class="status" id="status">Listo. Clic en cualquier punto del mapa.</div>
-    <button class="btn" id="btn-geoloc">Centrar en mi ubicación</button>
-
-    <div class="footer">Fuente: NASA POWER (diario). OSM/Leaflet.</div>
+    <div class="status" id="status">Listo. Clic en el mapa y elige fecha.</div>
+    <div class="footer">Fuente: NASA POWER (diario). Estimación climatológica cuando no hay dato diario o es futuro.</div>
   </div>
 
   <script>
-    // =============== Utilidades de fecha ===============
-    const fmtYYYYMMDD = d => {
-      const y=d.getFullYear();
-      const m=String(d.getMonth()+1).padStart(2,'0');
-      const dd=String(d.getDate()).padStart(2,'0');
-      return `${y}${m}${dd}`;
-    };
-    // Genera un rango [N días atrás ... ayer] para asegurar datos disponibles
-    function lastNDaysRange(n=7){
-      const today = new Date();
-      // POWER suele tener 1–3 días de retraso; pedimos 7 para cubrirnos
-      const end = new Date(today); end.setDate(end.getDate()-1);
-      const start = new Date(today); start.setDate(start.getDate()-n);
-      return { start: fmtYYYYMMDD(start), end: fmtYYYYMMDD(end) };
-    }
+    // =============== Utiles fecha ===============
+    const pad2 = n => String(n).padStart(2,'0');
+    const fmtYYYYMMDD = d => `${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}`;
     const isoFromYYYYMMDD = s => `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;
+    const yyyymmddFromISO = s => s.replaceAll('-','');
+    const today = new Date();
+    const yesterday = new Date(Date.now()-86400000);
 
-    // =============== DOM refs ===============
+    // =============== DOM ===============
     const el = {
       coord: document.getElementById('coord'),
       status: document.getElementById('status'),
       badgeDate: document.getElementById('badge-date'),
+      badgeMode: document.getElementById('badge-mode'),
       t2m: document.getElementById('t2m'),
       t2m_max: document.getElementById('t2m_max'),
       t2m_min: document.getElementById('t2m_min'),
       prec: document.getElementById('prec'),
       wind: document.getElementById('wind'),
       btnGeo: document.getElementById('btn-geoloc'),
+      date: document.getElementById('date'),
     };
 
-    function setLoading(on=true, msg='Consultando NASA POWER…'){
+    // Inicializa date input: min 1981-01-01 (inicio típico POWER) – max hoy+365 permitido para elegir futuro
+    (function initDateInput(){
+      const min = '1981-01-01';
+      const max = new Date(today); max.setFullYear(today.getFullYear()+1);
+      el.date.min = min;
+      el.date.max = `${max.getFullYear()}-${pad2(max.getMonth()+1)}-${pad2(max.getDate())}`;
+      // por defecto ayer (para asegurar disponibilidad)
+      el.date.value = `${yesterday.getFullYear()}-${pad2(yesterday.getMonth()+1)}-${pad2(yesterday.getDate())}`;
+    })();
+
+    function setLoading(on=true, msg='Consultando…'){
       el.status.textContent = msg;
       el.status.classList.toggle('loading', on);
     }
@@ -96,6 +105,8 @@
       el.prec.textContent = '—';
       el.wind.textContent = '—';
       el.badgeDate.textContent = '—';
+      el.badgeMode.style.display = 'none';
+      el.badgeMode.textContent = '';
     }
 
     // =============== Leaflet ===============
@@ -104,28 +115,26 @@
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
-    let marker;
+    let marker, lastLat=null, lastLon=null;
 
-    // Click en el mapa → mover/crear marcador y consultar datos
-    map.on('click', async (e) => {
+    async function handlePoint(lat, lon){
+      lastLat = lat; lastLon = lon;
+      if (!marker) marker = L.marker([lat, lon]).addTo(map);
+      else marker.setLatLng([lat, lon]);
+      marker.bindPopup(`Lat: ${lat}<br>Lon: ${lon}`).openPopup();
+      el.coord.textContent = `Ubicación: ${lat}, ${lon}`;
+      await fetchForSelectedDate();
+    }
+
+    map.on('click', (e) => {
       const lat = +e.latlng.lat.toFixed(6);
       const lon = +e.latlng.lng.toFixed(6);
-
-      if (!marker) {
-        marker = L.marker([lat, lon]).addTo(map);
-      } else {
-        marker.setLatLng([lat, lon]);
-      }
-      marker.bindPopup(`Lat: ${lat}<br>Lon: ${lon}`).openPopup();
-
-      el.coord.textContent = `Ubicación: ${lat}, ${lon}`;
-      await fetchClimate(lat, lon);
+      handlePoint(lat, lon);
     });
 
-    // Botón: geolocalización rápida
     el.btnGeo.addEventListener('click', ()=>{
       if (!navigator.geolocation) {
-        el.status.textContent = 'Geolocalización no disponible en este navegador.';
+        el.status.textContent = 'Geolocalización no disponible.';
         return;
       }
       setLoading(true, 'Obteniendo tu ubicación…');
@@ -134,87 +143,151 @@
           const lat = +pos.coords.latitude.toFixed(6);
           const lon = +pos.coords.longitude.toFixed(6);
           map.setView([lat, lon], 8);
-          if (!marker) marker = L.marker([lat, lon]).addTo(map);
-          else marker.setLatLng([lat, lon]);
-          marker.bindPopup(`Lat: ${lat}<br>Lon: ${lon}`).openPopup();
-          el.coord.textContent = `Ubicación: ${lat}, ${lon}`;
-          fetchClimate(lat, lon);
+          handlePoint(lat, lon);
         },
-        (err)=>{
-          setLoading(false, 'No se pudo obtener tu ubicación.');
-        },
+        ()=> setLoading(false, 'No se pudo obtener tu ubicación.'),
         { enableHighAccuracy:true, timeout:8000, maximumAge:0 }
       );
     });
 
-    // Ajuste de tamaño en layouts dinámicos
+    // Si cambia la fecha y ya tenemos punto, refresca
+    el.date.addEventListener('change', ()=>{ if (lastLat!=null) fetchForSelectedDate(); });
+
     setTimeout(()=>map.invalidateSize(), 0);
     window.addEventListener('resize', ()=>map.invalidateSize());
 
-    // =============== NASA POWER ===============
-    // Importante: POWER entrega °C para T2M/T2M_MAX/T2M_MIN, mm/día para PRECTOTCORR, m/s para WS10M.
-    async function fetchClimate(lat, lon){
-      setLoading(true, 'Consultando NASA POWER…');
+    // =============== Lógica de fecha / modos ===============
+    async function fetchForSelectedDate(){
+      if (lastLat==null) { el.status.textContent='Elige primero un punto del mapa.'; return; }
       clearValues();
+      const iso = el.date.value;
+      const ymd = yyyymmddFromISO(iso);
+      const chosen = new Date(iso);
+      const isPast = chosen < new Date(today.getFullYear(), today.getMonth(), today.getDate()); // estrictamente antes de hoy
 
-      const { start, end } = lastNDaysRange(7);
-      const params = ['T2M','T2M_MAX','T2M_MIN','PRECTOTCORR','WS10M'].join(',');
-      const url = new URL('https://power.larc.nasa.gov/api/temporal/daily/point');
-      url.search = new URLSearchParams({
-        parameters: params,
-        community: 'ag',
-        longitude: lon,
-        latitude: lat,
-        start,
-        end,
-        format: 'JSON'
-      });
-
-      try {
-        const r = await fetch(url.toString(), { mode: 'cors' });
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        const data = await r.json();
-
-        const param = data?.properties?.parameter || {};
-        // Encontrar la fecha más reciente disponible dentro del rango
-        const allDates = new Set();
-        Object.values(param).forEach(obj => { if (obj) for (const d in obj) allDates.add(d); });
-        if (allDates.size === 0) throw new Error('Sin datos en el rango consultado.');
-
-        // Dentro de fetchClimate(), después de obtener param
-        const validDates = [...allDates].filter(d => {
-          const t = param.T2M?.[d];
-          return t != null && t > -900; // evita -999
-        });
-        if (validDates.length === 0) throw new Error('Sin datos válidos.');
-        const latest = validDates.sort().pop(); // último YYYYMMDD
-        const iso = isoFromYYYYMMDD(latest);
-
-        // Extraer valores (pueden venir undefined si justo no hay ese parámetro ese día)
-        const T2M       = safeNum(param.T2M?.[latest]);
-        const T2M_MAX   = safeNum(param.T2M_MAX?.[latest]);
-        const T2M_MIN   = safeNum(param.T2M_MIN?.[latest]);
-        const PREC      = safeNum(param.PRECTOTCORR?.[latest]);
-        const WIND      = safeNum(param.WS10M?.[latest]);
-
-        // Render
-        el.badgeDate.textContent = iso;
-        if (T2M      != null) el.t2m.textContent    = `${T2M.toFixed(1)} °C`;        else el.t2m.textContent    = '—';
-        if (T2M_MAX  != null) el.t2m_max.textContent= `${T2M_MAX.toFixed(1)} °C`;    else el.t2m_max.textContent= '—';
-        if (T2M_MIN  != null) el.t2m_min.textContent= `${T2M_MIN.toFixed(1)} °C`;    else el.t2m_min.textContent= '—';
-        if (PREC     != null) el.prec.textContent   = `${PREC.toFixed(1)} mm/día`;   else el.prec.textContent   = '—';
-        if (WIND     != null) el.wind.textContent   = `${WIND.toFixed(1)} m/s`;      else el.wind.textContent   = '—';
-
-        setLoading(false, `Datos de ${iso}.`);
-      } catch (err) {
-        console.error('POWER error:', err);
-        setLoading(false, 'No se pudieron obtener datos. ¿Problemas de CORS o red?');
+      if (isPast) {
+        // ——— DATO DIARIO EXACTO (con plan B ±3 días si falta) ———
+        const ok = await fetchDailyExactOrWindow(lastLat, lastLon, ymd);
+        if (!ok) {
+          // si tampoco hubo en la ventana, caer a climatología del mes
+          await fetchClimatologyMonth(lastLat, lastLon, chosen);
+        }
+      } else {
+        // ——— FUTURO / HOY → CLIMATOLOGÍA ———
+        await fetchClimatologyMonth(lastLat, lastLon, chosen);
       }
     }
 
-    function safeNum(v){
+    // =============== NASA POWER: diario (exacto + ventana ±3) ===============
+    async function fetchDailyExactOrWindow(lat, lon, ymd){
+      setLoading(true, 'Buscando dato diario…');
+      const params = ['T2M','T2M_MAX','T2M_MIN','PRECTOTCORR','WS10M'].join(',');
+      const base = 'https://power.larc.nasa.gov/api/temporal/daily/point';
+
+      // intento 1: día exacto
+      let ok = await fetchAndRenderDaily(`${base}?parameters=${params}&community=ag&longitude=${lon}&latitude=${lat}&start=${ymd}&end=${ymd}&format=JSON`, ymd, 'observado');
+      if (ok) return true;
+
+      // intento 2: ventana ±3 días
+      const d = new Date(isoFromYYYYMMDD(ymd));
+      const from = new Date(d), to = new Date(d);
+      from.setDate(from.getDate()-3); to.setDate(to.getDate()+3);
+      const start = fmtYYYYMMDD(from), end = fmtYYYYMMDD(to);
+      ok = await fetchAndRenderDaily(`${base}?parameters=${params}&community=ag&longitude=${lon}&latitude=${lat}&start=${start}&end=${end}&format=JSON`, null, 'más cercano');
+      return !!ok;
+    }
+
+    async function fetchAndRenderDaily(url, exactYMD, modeLabel){
+      try{
+        const r = await fetch(url, { mode:'cors' });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const data = await r.json();
+        const p = data?.properties?.parameter || {};
+        const allDates = new Set();
+        Object.values(p).forEach(obj => { if (obj) for (const d in obj) allDates.add(d); });
+        const valid = [...allDates].filter(d => isFinite(+p.T2M?.[d]) && +p.T2M?.[d] > -900);
+        if (valid.length===0) return false;
+
+        // si pedí exacto y existe, uso ese; si no, uso el más cercano
+        let pick = exactYMD && valid.includes(exactYMD) ? exactYMD
+                  : valid.sort().reduce((best, d)=>{
+                      if (!exactYMD) return valid.sort().pop(); // si no hay exacto, usa la última disponible
+                      const tgt = new Date(isoFromYYYYMMDD(exactYMD)).getTime();
+                      const cur = new Date(isoFromYYYYMMDD(d)).getTime();
+                      const bestT = best ? new Date(isoFromYYYYMMDD(best)).getTime() : Infinity;
+                      return Math.abs(cur - tgt) < Math.abs(bestT - tgt) ? d : best;
+                    }, null);
+
+        renderValuesFromParams(p, pick, modeLabel);
+        return true;
+      }catch(e){
+        console.error('POWER daily error', e);
+        return false;
+      }finally{
+        setLoading(false);
+      }
+    }
+
+    // =============== NASA POWER: climatología mensual (promedios) ===============
+    async function fetchClimatologyMonth(lat, lon, dateObj){
+      setLoading(true, 'Sin dato diario. Usando climatología mensual…');
+      const m = pad2(dateObj.getMonth()+1);
+      const params = ['T2M','T2M_MAX','T2M_MIN','PRECTOTCORR','WS10M'].join(',');
+      const url = `https://power.larc.nasa.gov/api/temporal/climatology/point?parameters=${params}&community=ag&longitude=${lon}&latitude=${lat}&format=JSON&start=20240101&end=20241231`;
+      try{
+        const r = await fetch(url, { mode:'cors' });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const data = await r.json();
+        const p = data?.properties?.parameter || {};
+        // En climatología los índices suelen ser "1","2",... (mes)
+        const pick = String(+m); // "01" -> "1"
+        renderValuesFromParams(p, pick, 'climatología');
+        return true;
+      }catch(e){
+        console.error('POWER climatology error', e);
+        el.status.textContent = 'No se pudo obtener ni dato diario ni climatología.';
+        return false;
+      }finally{
+        setLoading(false);
+      }
+    }
+
+    // =============== Render helper ===============
+    function renderValuesFromParams(p, key, mode){
+      const T2M     = numOrNull(p.T2M?.[key]);
+      const T2M_MAX = numOrNull(p.T2M_MAX?.[key]);
+      const T2M_MIN = numOrNull(p.T2M_MIN?.[key]);
+      const PREC    = numOrNull(p.PRECTOTCORR?.[key]);
+      const WIND    = numOrNull(p.WS10M?.[key]);
+
+      el.t2m.textContent     = T2M     != null ? `${T2M.toFixed(1)} °C`      : '—';
+      el.t2m_max.textContent = T2M_MAX != null ? `${T2M_MAX.toFixed(1)} °C`  : '—';
+      el.t2m_min.textContent = T2M_MIN != null ? `${T2M_MIN.toFixed(1)} °C`  : '—';
+      el.prec.textContent    = PREC    != null ? `${PREC.toFixed(1)} mm/día` : '—';
+      el.wind.textContent    = WIND    != null ? `${WIND.toFixed(1)} m/s`    : '—';
+
+      // fecha/indicadores para el usuario
+      if (/^\d{8}$/.test(key)) {
+        el.badgeDate.textContent = isoFromYYYYMMDD(key);
+      } else {
+        // climatología mensual -> muestra mes del date input
+        el.badgeDate.textContent = el.date.value;
+      }
+      if (mode){
+        el.badgeMode.style.display = 'inline-block';
+        el.badgeMode.textContent = mode;
+        el.status.textContent = mode === 'climatología'
+          ? 'Estimación basada en promedios históricos mensuales (no pronóstico).'
+          : `Dato ${mode}.`;
+      } else {
+        el.badgeMode.style.display = 'none';
+        el.status.textContent = 'OK.';
+      }
+    }
+
+    function numOrNull(v){
       const n = Number(v);
-      return Number.isFinite(n) ? n : null;
+      return Number.isFinite(n) && n > -900 ? n : null;
     }
   </script>
 </body>

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Clima por punto + Calendario 6x7</title>
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <style>
+    :root{
+      --bg: #0f172a;         /* slate-900 */
+      --panel: #111827;      /* gray-900 */
+      --muted: #9ca3af;      /* gray-400 */
+      --text: #e5e7eb;       /* gray-200 */
+      --accent: #22d3ee;     /* cyan-400 */
+      --accent-2: #60a5fa;   /* blue-400 */
+      --success: #34d399;    /* emerald-400 */
+      --warn: #f59e0b;       /* amber-500 */
+      --danger: #f87171;     /* red-400 */
+      --card: #0b1023;       /* deep navy */
+    }
+    *{ box-sizing: border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0; background:linear-gradient(180deg, #0b1023, #0f172a 40%, #0b1023);
+      color:var(--text); font: 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    .app{ display:grid; grid-template-columns: 360px 1fr; gap:16px; padding:16px; height:100%; }
+    .sidebar{ display:flex; flex-direction:column; gap:16px; }
+    .card{ background:radial-gradient(1200px 700px at -10% -20%, rgba(96,165,250,0.12), transparent 60%),
+                     radial-gradient(1000px 600px at 120% 30%, rgba(34,211,238,0.10), transparent 60%),
+                     var(--card);
+            border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:14px; box-shadow: 0 6px 20px rgba(0,0,0,0.35); }
+    .card h3{ margin:0 0 10px; font-size:16px; letter-spacing:.2px; }
+    .row{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .muted{ color:var(--muted); }
+    .status.loading::after{ content:'⏳'; margin-left:.5em; }
+    .badges{ display:flex; gap:6px; flex-wrap:wrap; }
+    .badge{ display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); color:#e6f6ff;
+            padding:2px 8px; border-radius:999px; font-size:12px; }
+    .badge .dot{ width:8px; height:8px; border-radius:999px; background:var(--accent); display:inline-block; }
+    .badge.warn .dot{ background:var(--warn); }
+    .badge.ok   .dot{ background:var(--success); }
+
+    #map{ height:100%; min-height: 420px; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); }
+
+    .metrics{ display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; }
+    .metric{ background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:10px; }
+    .metric label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+    .metric .val{ font-size:18px; font-weight:600; }
+
+    .actions{ display:flex; gap:8px; }
+    .btn{ border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.06); color:var(--text); padding:8px 10px; border-radius:10px; cursor:pointer; }
+    .btn:hover{ filter:brightness(1.08); }
+
+    /* ===== Calendario 6x7 ===== */
+    .calendar-container{ background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:12px; }
+    .calendar-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+    .calendar-current-date{ font-weight:600; letter-spacing:.2px; }
+    .calendar-nav{ display:flex; gap:6px; }
+    .calendar-nav button{ width:28px; height:28px; border-radius:8px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.08); color:var(--text); cursor:pointer; }
+    .calendar-week{ display:grid; grid-template-columns: repeat(7, 1fr); gap:4px; margin-bottom:6px; color:var(--muted); font-size:12px; }
+    .calendar-week span{ text-align:center; }
+    .calendar-dates{ list-style:none; margin:0; padding:0; display:grid; grid-template-columns: repeat(7, 1fr); gap:4px; }
+    .calendar-dates li{ text-align:center; padding:6px 0; border-radius:8px; outline:none; }
+    .calendar-dates li[role="button"]{ cursor:pointer; }
+    .calendar-dates li.inactive{ opacity:.35; }
+    .calendar-dates li.active{ border:1px solid rgba(96,165,250,.5); box-shadow: inset 0 0 0 1px rgba(96,165,250,.25); }
+    .calendar-dates li.highlight{ background:linear-gradient(180deg, rgba(34,211,238,0.25), rgba(96,165,250,0.25)); border:1px solid rgba(255,255,255,0.18); }
+    .calendar-dates li:focus{ outline:2px solid rgba(34,211,238,.7); outline-offset:2px; }
+
+    /* Responsive */
+    @media (max-width: 980px){
+      .app{ grid-template-columns: 1fr; }
+      #map{ min-height: 300px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar">
+      <div class="card">
+        <h3>Ubicación y fecha</h3>
+        <div class="row" style="margin-bottom:8px;">
+          <div id="coord" class="muted">Elige un punto del mapa…</div>
+          <div class="actions">
+            <button id="btn-geoloc" class="btn">📍 Mi ubicación</button>
+          </div>
+        </div>
+        <div class="badges" style="margin-bottom:8px;">
+          <span class="badge"><span class="dot"></span><span id="badge-date">—</span></span>
+          <span class="badge warn" id="badge-mode" style="display:none"><span class="dot"></span><span>—</span></span>
+        </div>
+        <div id="status" class="status muted">Listo.</div>
+      </div>
+
+      <div class="card calendar-container" aria-label="Selector de fecha">
+        <div class="calendar-header">
+          <button id="calendar-prev" title="Mes anterior" class="calendar-nav-btn">◀</button>
+          <div class="calendar-current-date">Mes Año</div>
+          <button id="calendar-next" title="Mes siguiente" class="calendar-nav-btn">▶</button>
+        </div>
+        <div class="calendar-week" aria-hidden="true">
+          <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
+        </div>
+        <ul class="calendar-dates" role="grid" aria-label="Días del mes"></ul>
+      </div>
+
+      <div class="card">
+        <h3>Variables meteorológicas</h3>
+        <div class="metrics">
+          <div class="metric"><label>T2M (media)</label><div id="t2m" class="val">—</div></div>
+          <div class="metric"><label>T2M_MAX</label><div id="t2m_max" class="val">—</div></div>
+          <div class="metric"><label>T2M_MIN</label><div id="t2m_min" class="val">—</div></div>
+          <div class="metric"><label>PRECTOTCORR</label><div id="prec" class="val">—</div></div>
+          <div class="metric"><label>WS10M</label><div id="wind" class="val">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:0;">
+      <div id="map"></div>
+    </div>
+  </div>
+
+  <!-- ======= Script principal (Mapa + NASA POWER + Calendario 6x7) ======= -->
+  <script>
+    // =============== Utiles fecha ===============
+    const pad2 = n => String(n).padStart(2,'0');
+    const fmtYYYYMMDD = d => `${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}`;
+    const isoFromYYYYMMDD = s => `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;
+    const yyyymmddFromISO = s => s.replaceAll('-','');
+    const today = new Date();
+    const yesterday = new Date(Date.now()-86400000);
+
+    // =============== DOM ===============
+    const el = {
+      coord: document.getElementById('coord'),
+      status: document.getElementById('status'),
+      badgeDate: document.getElementById('badge-date'),
+      badgeMode: document.getElementById('badge-mode'),
+      t2m: document.getElementById('t2m'),
+      t2m_max: document.getElementById('t2m_max'),
+      t2m_min: document.getElementById('t2m_min'),
+      prec: document.getElementById('prec'),
+      wind: document.getElementById('wind'),
+      btnGeo: document.getElementById('btn-geoloc'),
+    };
+
+    // Mantendremos una fecha "seleccionada" interna; por defecto, ayer
+    let selectedDate = new Date(yesterday);
+
+    function setLoading(on=true, msg='Consultando…'){
+      el.status.textContent = msg;
+      el.status.classList.toggle('loading', on);
+    }
+    function clearValues(){
+      el.t2m.textContent = '—';
+      el.t2m_max.textContent = '—';
+      el.t2m_min.textContent = '—';
+      el.prec.textContent = '—';
+      el.wind.textContent = '—';
+      el.badgeDate.textContent = '—';
+      el.badgeMode.style.display = 'none';
+      el.badgeMode.querySelector('span:last-child').textContent = '';
+    }
+
+    // =============== Leaflet ===============
+    const map = L.map('map', { zoomControl:true }).setView([0,0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    let marker, lastLat=null, lastLon=null;
+
+    async function handlePoint(lat, lon){
+      lastLat = lat; lastLon = lon;
+      if (!marker) marker = L.marker([lat, lon]).addTo(map);
+      else marker.setLatLng([lat, lon]);
+      marker.bindPopup(`Lat: ${lat}<br>Lon: ${lon}`).openPopup();
+      el.coord.textContent = `Ubicación: ${lat}, ${lon}`;
+      await fetchForSelectedDate();
+    }
+
+    map.on('click', (e) => {
+      const lat = +e.latlng.lat.toFixed(6);
+      const lon = +e.latlng.lng.toFixed(6);
+      handlePoint(lat, lon);
+    });
+
+    el.btnGeo.addEventListener('click', ()=>{
+      if (!navigator.geolocation) {
+        el.status.textContent = 'Geolocalización no disponible.';
+        return;
+      }
+      setLoading(true, 'Obteniendo tu ubicación…');
+      navigator.geolocation.getCurrentPosition(
+        (pos)=>{
+          const lat = +pos.coords.latitude.toFixed(6);
+          const lon = +pos.coords.longitude.toFixed(6);
+          map.setView([lat, lon], 8);
+          handlePoint(lat, lon);
+        },
+        ()=> setLoading(false, 'No se pudo obtener tu ubicación.'),
+        { enableHighAccuracy:true, timeout:8000, maximumAge:0 }
+      );
+    });
+
+    setTimeout(()=>map.invalidateSize(), 0);
+    window.addEventListener('resize', ()=>map.invalidateSize());
+
+    // =============== Lógica de fecha / modos ===============
+    async function fetchForSelectedDate(){
+      if (lastLat==null) { el.status.textContent='Elige primero un punto del mapa.'; return; }
+      clearValues();
+      const iso = `${selectedDate.getFullYear()}-${pad2(selectedDate.getMonth()+1)}-${pad2(selectedDate.getDate())}`;
+      const ymd = yyyymmddFromISO(iso);
+      const chosen = new Date(iso);
+      const isPast = chosen < new Date(today.getFullYear(), today.getMonth(), today.getDate()); // antes de hoy
+
+      if (isPast) {
+        const ok = await fetchDailyExactOrWindow(lastLat, lastLon, ymd);
+        if (!ok) {
+          await fetchClimatologyMonth(lastLat, lastLon, chosen);
+        }
+      } else {
+        await fetchClimatologyMonth(lastLat, lastLon, chosen);
+      }
+    }
+
+    // =============== NASA POWER: diario (exacto + ventana ±3) ===============
+    async function fetchDailyExactOrWindow(lat, lon, ymd){
+      setLoading(true, 'Buscando dato diario…');
+      const params = ['T2M','T2M_MAX','T2M_MIN','PRECTOTCORR','WS10M'].join(',');
+      const base = 'https://power.larc.nasa.gov/api/temporal/daily/point';
+
+      // intento 1: día exacto
+      let ok = await fetchAndRenderDaily(`${base}?parameters=${params}&community=ag&longitude=${lon}&latitude=${lat}&start=${ymd}&end=${ymd}&format=JSON`, ymd, 'observado');
+      if (ok) return true;
+
+      // intento 2: ventana ±3 días
+      const d = new Date(isoFromYYYYMMDD(ymd));
+      const from = new Date(d), to = new Date(d);
+      from.setDate(from.getDate()-3); to.setDate(to.getDate()+3);
+      const start = fmtYYYYMMDD(from), end = fmtYYYYMMDD(to);
+      ok = await fetchAndRenderDaily(`${base}?parameters=${params}&community=ag&longitude=${lon}&latitude=${lat}&start=${start}&end=${end}&format=JSON`, null, 'más cercano');
+      return !!ok;
+    }
+
+    async function fetchAndRenderDaily(url, exactYMD, modeLabel){
+      try{
+        const r = await fetch(url, { mode:'cors' });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const data = await r.json();
+        const p = data?.properties?.parameter || {};
+        const allDates = new Set();
+        Object.values(p).forEach(obj => { if (obj) for (const d in obj) allDates.add(d); });
+        const valid = [...allDates].filter(d => isFinite(+p.T2M?.[d]) && +p.T2M?.[d] > -900);
+        if (valid.length===0) return false;
+
+        let pick;
+        if (exactYMD && valid.includes(exactYMD)) {
+          pick = exactYMD;
+        } else if (exactYMD) {
+          // elegir la fecha más cercana a exactYMD
+          const tgt = new Date(isoFromYYYYMMDD(exactYMD)).getTime();
+          pick = valid.reduce((best, d)=>{
+            const cur = new Date(isoFromYYYYMMDD(d)).getTime();
+            if (!best) return d;
+            const bestT = new Date(isoFromYYYYMMDD(best)).getTime();
+            return Math.abs(cur - tgt) < Math.abs(bestT - tgt) ? d : best;
+          }, null);
+        } else {
+          // si no hay exacta ni target, usa la última disponible
+          pick = valid.sort().pop();
+        }
+
+        renderValuesFromParams(p, pick, modeLabel);
+        return true;
+      }catch(e){
+        console.error('POWER daily error', e);
+        return false;
+      }finally{
+        setLoading(false);
+      }
+    }
+
+    // =============== NASA POWER: climatología mensual (promedios) ===============
+    async function fetchClimatologyMonth(lat, lon, dateObj){
+      setLoading(true, 'Sin dato diario. Usando climatología mensual…');
+      const m = pad2(dateObj.getMonth()+1);
+      const params = ['T2M','T2M_MAX','T2M_MIN','PRECTOTCORR','WS10M'].join(',');
+      const url = `https://power.larc.nasa.gov/api/temporal/climatology/point?parameters=${params}&community=ag&longitude=${lon}&latitude=${lat}&format=JSON&start=20240101&end=20241231`;
+      try{
+        const r = await fetch(url, { mode:'cors' });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const data = await r.json();
+        const p = data?.properties?.parameter || {};
+        const pick = String(+m); // "01" -> "1"
+        renderValuesFromParams(p, pick, 'climatología');
+        return true;
+      }catch(e){
+        console.error('POWER climatology error', e);
+        el.status.textContent = 'No se pudo obtener ni dato diario ni climatología.';
+        return false;
+      }finally{
+        setLoading(false);
+      }
+    }
+
+    // =============== Render helper ===============
+    function renderValuesFromParams(p, key, mode){
+      const T2M     = numOrNull(p.T2M?.[key]);
+      const T2M_MAX = numOrNull(p.T2M_MAX?.[key]);
+      const T2M_MIN = numOrNull(p.T2M_MIN?.[key]);
+      const PREC    = numOrNull(p.PRECTOTCORR?.[key]);
+      const WIND    = numOrNull(p.WS10M?.[key]);
+
+      el.t2m.textContent     = T2M     != null ? `${T2M.toFixed(1)} °C`      : '—';
+      el.t2m_max.textContent = T2M_MAX != null ? `${T2M_MAX.toFixed(1)} °C`  : '—';
+      el.t2m_min.textContent = T2M_MIN != null ? `${T2M_MIN.toFixed(1)} °C`  : '—';
+      el.prec.textContent    = PREC    != null ? `${PREC.toFixed(1)} mm/día` : '—';
+      el.wind.textContent    = WIND    != null ? `${WIND.toFixed(1)} m/s`    : '—';
+
+      // fecha/indicadores
+      if (/^\d{8}$/.test(key)) {
+        el.badgeDate.textContent = isoFromYYYYMMDD(key);
+      } else {
+        el.badgeDate.textContent = `${selectedDate.getFullYear()}-${pad2(selectedDate.getMonth()+1)}-${pad2(selectedDate.getDate())}`;
+      }
+      if (mode){
+        el.badgeMode.style.display = 'inline-flex';
+        el.badgeMode.querySelector('span:last-child').textContent = mode;
+        el.status.textContent = mode === 'climatología'
+          ? 'Estimación basada en promedios históricos mensuales (no pronóstico).'
+          : `Dato ${mode}.`;
+      } else {
+        el.badgeMode.style.display = 'none';
+        el.status.textContent = 'OK.';
+      }
+    }
+
+    function numOrNull(v){
+      const n = Number(v);
+      return Number.isFinite(n) && n > -900 ? n : null;
+    }
+  </script>
+
+  <!-- ======= Calendario robusto (6x7 fijo, selección, teclado, evento) ======= -->
+  <script>
+  (function () {
+    const container = document.querySelector('.calendar-container');
+    if (!container) return;
+
+    const elTitle   = container.querySelector('.calendar-current-date');
+    const elDates   = container.querySelector('.calendar-dates');
+    const btnPrev   = container.querySelector('#calendar-prev');
+    const btnNext   = container.querySelector('#calendar-next');
+
+    // --- Config ---
+    const WEEK_START = 0; // 0=Domingo, 1=Lunes
+    const LOCALE = 'es-ES';
+
+    // Estado
+    let view = new Date(selectedDate);  // mes en vista, arranca en la fecha seleccionada
+    view.setDate(1);
+    let selected = { y: selectedDate.getFullYear(), m: selectedDate.getMonth(), d: selectedDate.getDate() };
+
+    // Utiles
+    const pad = (n) => String(n).padStart(2, '0');
+    const toISO = (y, m, d) => `${y}-${pad(m + 1)}-${pad(d)}`;
+    const sameYMD = (y, m, d, dt) => (dt.getFullYear() === y && dt.getMonth() === m && dt.getDate() === d);
+    const monthLabel = (y, m) => {
+      const name = new Intl.DateTimeFormat(LOCALE, { month: 'long' }).format(new Date(y, m, 1));
+      return name.charAt(0).toUpperCase() + name.slice(1) + ' ' + y;
+    };
+
+    // Corrige getDay() según WEEK_START
+    const dayIndex = (date) => {
+      const raw = date.getDay();           // 0..6 (Domingo..Sábado)
+      return (raw - WEEK_START + 7) % 7;   // reindexado con semana empezando en WEEK_START
+    };
+
+    function render() {
+      const Y = view.getFullYear();
+      const M = view.getMonth();
+
+      elTitle.textContent = monthLabel(Y, M);
+
+      // --- Calcular rejilla 6x7 ---
+      const firstDayOfMonth = new Date(Y, M, 1);
+      const daysPrev = dayIndex(firstDayOfMonth);       // 0..6
+      const daysInMonth = new Date(Y, M + 1, 0).getDate();
+      let total = daysPrev + daysInMonth;
+      let daysNext = (7 - (total % 7)) % 7;
+      total += daysNext;
+      if (total < 42) {
+        daysNext += (42 - total); // fuerza 6 filas
+      }
+
+      const items = [];
+      const today = new Date();
+
+      // --- Mes anterior (inactivos) ---
+      const daysInPrevMonth = new Date(Y, M, 0).getDate();
+      for (let i = daysPrev; i > 0; i--) {
+        const d = daysInPrevMonth - i + 1;
+        items.push(`<li class="inactive" aria-disabled="true">${d}</li>`);
+      }
+
+      // --- Mes actual ---
+      for (let d = 1; d <= daysInMonth; d++) {
+        const isToday = sameYMD(Y, M, d, today);
+        const isSelected = selected && selected.y === Y && selected.m === M && selected.d === d;
+
+        const classes = [
+          isToday ? 'active' : '',
+          isSelected ? 'highlight' : ''
+        ].join(' ').trim();
+
+        items.push(
+          `<li class="${classes}" data-day="${d}" tabindex="0" role="button" aria-pressed="${isSelected}">
+            ${d}
+          </li>`
+        );
+      }
+
+      // --- Mes siguiente (inactivos) ---
+      for (let d = 1; d <= daysNext; d++) {
+        items.push(`<li class="inactive" aria-disabled="true">${d}</li>`);
+      }
+
+      elDates.innerHTML = items.join('');
+
+      // --- Click / teclado en días del mes actual ---
+      elDates.querySelectorAll('li[data-day]').forEach((li) => {
+        li.addEventListener('click', () => choose(+li.dataset.day));
+        li.addEventListener('keydown', (ev) => {
+          const key = ev.key;
+          if (key === 'Enter') { choose(+li.dataset.day); return; }
+          // Navegación con flechas
+          const step = (dx) => moveFocus(li, dx);
+          if (key === 'ArrowLeft')  step(-1);
+          if (key === 'ArrowRight') step(+1);
+          if (key === 'ArrowUp')    step(-7);
+          if (key === 'ArrowDown')  step(+7);
+        });
+      });
+    }
+
+    // Selección de día
+    function choose(d) {
+      const y = view.getFullYear();
+      const m = view.getMonth();
+      selected = { y, m, d };
+      // Sincroniza con la app principal
+      selectedDate = new Date(y, m, d);
+      render();
+      const iso = toISO(y, m, d);
+      container.dispatchEvent(new CustomEvent('calendar:dateSelected', {
+        detail: { year: y, month: m, day: d, iso }
+      }));
+      // Dispara carga para esta fecha
+      fetchForSelectedDate();
+    }
+
+    // Mover foco dentro de la grilla (sin romper 6x7)
+    function moveFocus(fromLi, delta) {
+      const cells = Array.from(elDates.querySelectorAll('li'));
+      const idx = cells.indexOf(fromLi);
+      const j = Math.max(0, Math.min(cells.length - 1, idx + delta));
+      const target = cells[j];
+      if (target?.hasAttribute('data-day')) {
+        target.focus();
+      } else {
+        const dir = Math.sign(delta) || 1;
+        let k = j;
+        while (k >= 0 && k < cells.length) {
+          if (cells[k].hasAttribute('data-day')) { cells[k].focus(); break; }
+          k += dir;
+        }
+      }
+    }
+
+    // Botones prev / next
+    btnPrev?.addEventListener('click', () => { view.setMonth(view.getMonth() - 1); render(); });
+    btnNext?.addEventListener('click', () => { view.setMonth(view.getMonth() + 1); render(); });
+
+    // Inicial
+    render();
+
+    // Ejemplo de escucha externa (si se quisiera)
+    // container.addEventListener('calendar:dateSelected', e => console.log(e.detail.iso));
+  })();
+  </script>
+</body>
+</html>
