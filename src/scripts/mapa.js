@@ -34,13 +34,13 @@
     const el = {
       date:  document.getElementById('p-date'),
       coord: document.getElementById('p-coord'),
-      t2m:   document.getElementById('p-t2m'),
-      t2mmax:document.getElementById('p-t2mmax'),
-      t2mmin:document.getElementById('p-t2mmin'),
-      prec:  document.getElementById('p-prec'),
-      wind:  document.getElementById('p-wind'),
-      pres:  document.getElementById('p-pres'),
-      r_h2m: document.getElementById('p-r_h2m'),
+      t2m:   document.getElementById('p-t2m'), //tmed
+      t2mmax:document.getElementById('p-t2mmax'), //tmax
+      t2mmin:document.getElementById('p-t2mmin'), //tmin
+      prec:  document.getElementById('p-prec'), //precipitacion
+      wind:  document.getElementById('p-wind'), //viento
+      pres:  document.getElementById('p-pres'), //presion
+      r_h2m: document.getElementById('p-r_h2m'), //humedad relativa
       status:document.getElementById('p-status')
 
     };
