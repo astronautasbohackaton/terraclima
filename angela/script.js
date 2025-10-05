@@ -1,9 +1,9 @@
 // ========= PANEL HTML =========
 const el = {
-    date:  document.getElementById('p-date'),
-    coord: document.getElementById('p-coord'),
+    date:  document.getElementById('p-datea'),
+    //coord: document.getElementById('p-coord'),
     t2m:   document.getElementById('p-t2ma'),
-    status:document.getElementById('p-status')
+    status:document.getElementById('p-statusa')
 };
 
 const fmtYYYYMMDD = d => `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;

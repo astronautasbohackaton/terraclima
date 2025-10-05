@@ -34,6 +34,7 @@
     const el = {
       date:  document.getElementById('p-date'),
       coord: document.getElementById('p-coord'),
+      coord: document.getElementById('p-coorda'),
       t2m:   document.getElementById('p-t2m'), //tmed
       t2mmax:document.getElementById('p-t2mmax'), //tmax
       t2mmin:document.getElementById('p-t2mmin'), //tmin
