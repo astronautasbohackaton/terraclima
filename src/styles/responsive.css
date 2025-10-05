@@ -1,70 +1,275 @@
-/* /src/styles/responsive.css */
+/* =============================
+   📱 AJUSTES RESPONSIVOS ADICIONALES
+============================= */
 
-/* GENERAL - Para pantallas de máximo 768px (celulares y tablets) */
-@media (max-width: 768px) {
-  body {
-    padding: 10px;
-    background-size: cover;
+/* Tablets y pantallas medianas */
+@media (max-width: 1024px) {
+  /* Ajustar el tamaño del título principal */
+  thead p {
+    font-size: 32px !important;
   }
-
-  h1, h2, h3 {
-    font-size: 1rem;
-  }
-
-  img {
-    max-width: 100%;
-    height: auto;
-  }
-
-  canvas {
-    width: 100% !important;
-    height: auto !important;
-  }
-
-  /* Ocultar o adaptar columnas de tablas */
-  table, thead, tbody, tr, td {
-    display: block;
-    width: 100%;
-  }
-
-  /* Logos */
+  
+  /* Reducir tamaño de logos */
   .redondo-logo {
-    width: 80px !important;
-    height: 80px !important;
+    height: 100px !important;
+    width: 100px !important;
   }
+}
 
-  /* MAPA */
-  #map {
-    width: 100% !important;
-    height: 300px !important;
+/* Móviles y pantallas pequeñas */
+@media (max-width: 768px) {
+  
+  /* ===== ESTRUCTURA GENERAL ===== */
+  body {
+    background-attachment: fixed;
   }
-
-  /* CALENDARIO */
-  .calendar-container {
+  
+  /* Ajustar tabla principal */
+  table {
     width: 100%;
-    overflow-x: auto;
+    border-spacing: 0;
   }
-
-  /* WIDGETS */
-  .widget-container {
-    width: 100%;
+  
+  /* Ajustar el título principal */
+  thead p {
+    font-size: 24px !important;
     padding: 10px;
   }
+  
+  /* Reducir tamaño de logos */
+  .redondo-logo {
+    height: 80px !important;
+    width: 80px !important;
+  }
 
+  /* ===== MAPA ===== */
+  #map {
+    height: 300px !important;
+    width: 100% !important;
+    margin: 10px auto;
+  }
+  
+  .map-mobile {
+    width: 100%;
+    padding: 0 10px;
+  }
+
+  /* ===== CONTENEDOR CALENDARIO Y ESTADÍSTICAS ===== */
+  /* Hacer que la tabla interna sea responsive */
+  tbody > tr > td > table {
+    display: block !important;
+    width: 100% !important;
+    border-spacing: 0 !important;
+  }
+  
+  tbody > tr > td > table tr {
+    display: block !important;
+    width: 100% !important;
+  }
+  
+  tbody > tr > td > table tr td {
+    display: block !important;
+    width: 100% !important;
+    padding: 10px !important;
+  }
+
+  /* ===== CALENDARIO ===== */
+  .calendar-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto 20px auto !important;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+
+  /* Ajustar el calendario interno */
+  .calendar-header {
+    padding: 10px;
+  }
+  
+  .calendar-current-date {
+    font-size: 18px;
+  }
+  
+  .calendar-body {
+    padding: 10px;
+  }
+  
+  .calendar-weekdays li {
+    font-size: 12px;
+  }
+  
+  .calendar-dates li {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  /* ===== ESTADÍSTICAS/GRÁFICO ===== */
+  .predictor {
+    width: 100% !important;
+    margin: 0 auto 20px auto !important;
+    padding: 15px;
+    box-sizing: border-box;
+  }
+  
+  #predictor-grafico h3 {
+    font-size: 18px;
+    text-align: center;
+  }
+  
+  .coord {
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  
+  .grid {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    font-size: 14px;
+  }
+  
+  #tempChart {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    margin-top: 15px;
+  }
+
+  /* ===== WIDGETS ===== */
+  .widget-container {
+    width: 100% !important;
+    padding: 0 10px !important;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
+  }
+  
   .widgets-container {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 20px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+  }
+  
+  .parent {
+    width: 95% !important;
+    max-width: 380px !important;
+    margin: 0 auto !important;
+  }
+  
+  .subparent {
+    width: 100%;
+    padding: 20px;
+  }
+  
+  /* Ajustar elementos dentro de los widgets */
+  .location {
+    font-size: 18px;
+    text-align: center;
+  }
+  
+  .main-display {
+    display: flex;
+    justify-content: center;
+    margin: 15px 0;
+  }
+  
+  .icon-main {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .details-grid {
+    text-align: center;
+  }
+  
+  .temperature,
+  .precipitation,
+  .relative-humidity,
+  .wind-speed,
+  .surface-pressure {
+    font-size: 24px;
+    margin: 10px 0;
+  }
+
+  /* ===== TARJETAS GENERALES ===== */
+  .cards-container {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 1rem;
+    padding: 0.5rem;
   }
 
-  .parent {
-    width: 100%;
+  .card {
+    width: 90%;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+}
+
+/* Móviles muy pequeños */
+@media (max-width: 480px) {
+  
+  /* Título aún más pequeño */
+  thead p {
+    font-size: 20px !important;
     padding: 5px;
   }
-
-  .main-display img,
+  
+  /* Logos más pequeños */
+  .redondo-logo {
+    height: 60px !important;
+    width: 60px !important;
+  }
+  
+  /* Mapa más pequeño */
+  #map {
+    height: 250px !important;
+  }
+  
+  /* Ajustar padding general */
+  .calendar-container,
+  .predictor,
+  .widget-container {
+    padding: 10px;
+  }
+  
+  /* Widgets más compactos */
   .icon-main {
     width: 60px;
     height: 60px;
+  }
+  
+  .temperature,
+  .precipitation,
+  .relative-humidity,
+  .wind-speed,
+  .surface-pressure {
+    font-size: 20px;
+  }
+  
+  .location {
+    font-size: 16px;
+  }
+}
+
+/* Landscape en móviles */
+@media (max-width: 768px) and (orientation: landscape) {
+  
+  #map {
+    height: 250px !important;
+  }
+  
+  .calendar-container {
+    max-width: 500px;
+  }
+  
+  .predictor {
+    max-width: 600px;
   }
 }
