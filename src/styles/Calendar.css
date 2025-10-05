@@ -2,7 +2,7 @@
 /* No hay body ni * globales — todo vive bajo .calendar-container */
 
 .calendar-container{
-  background:#484747;
+  background: rgba(108, 117, 125, 0.9);
   width:100%;
   max-width:360px;         /* ajústalo o quítalo si quieres ocupar la columna entera */
   border-radius:30px;
@@ -49,6 +49,7 @@
 }
 .calendar-container .calendar-dates{
   margin-top:6px; width:100%;
+ 
 }
 .calendar-container .calendar-body li{
   width:calc(100%/7);

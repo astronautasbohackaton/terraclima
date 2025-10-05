@@ -4,33 +4,37 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>WEBAPP TERRACLIMA</title>
-  <!-- Leaflet (CSS + JS) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- Estilos Calendario -->
-  <link rel="stylesheet" href="./src/styles/Calendar.css">
-  <!-- Estilos Mapa -->
-  <link rel="stylesheet" href="./src/styles/Mapa.css">
-  <!-- Widgets -->
-  <link rel="stylesheet" href="./src/styles/Widget.css">
-  <!-- Angela -->
-  <link rel="stylesheet" href="./angela/stylex.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Fuentes -->
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
- <style>
-       /* Fondo */
-    body{
-      background-image:url('./img/fondo1.jpg');
-      background-size:cover; background-repeat:no-repeat; background-position:center center;
-    }
-    .redondo{ border-radius:30px; }
-    .redondo-logo{ border-radius:50%; }
 
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link rel="stylesheet" href="./src/styles/Mapa.css">
+  <link rel="stylesheet" href="./src/styles/Calendar.css">
+  <link rel="stylesheet" href="./src/styles/Widget.css">
+  <link rel="stylesheet" href="./angela/stylex.css">
+
+  <style>
+    /* Fondo */
+    body {
+      background-image: url('https://wallup.net/wp-content/uploads/2019/09/838629-storm-weather-rain-sky-clouds-nature-landscape-sun.jpg');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center center;
+    }
+    .redondo {
+      border-radius: 30px;
+    }
+    .redondo-logo {
+      border-radius: 50%;
+    }
   </style>
 </head>
 <body>
@@ -38,7 +42,7 @@
   <table>
     <colgroup>
       <col style="width: 15%;">
-      <col style="width: 70%;">  <!-- mapa -->
+      <col style="width: 70%;">
       <col style="width: 15%;">
     </colgroup>
 
@@ -46,186 +50,143 @@
       <tr>
         <td>
           <div>
-          <img src="./marcelo/img/logo1.jpg" class="redondo-logo" alt="Logo1" height="120" width="120" style="position:relative;">
-        </div>
+            <img src="./marcelo/img/logo1.jpg" class="redondo-logo" alt="Logo1" height="120" width="120" style="position:relative;">
+          </div>
         </td>
-
-
-        <td><h1 style="text-align:center;">WEBAPP TERRACLIMA</h1></td>
-
-        <td><img src="./marcelo/img/logo3.jpeg" class="redondo-logo" alt="Logo2" height="120" width="120" style="position: relative;"></td>
+        <td>
+          <p style="text-align:center; color: white; font-size: 40px; text-shadow: 2px 2px 4px black;">WEBAPP TERRACLIMA</p>
+        </td>
+        <td>
+          <img src="./marcelo/img/logo3.jpeg" class="redondo-logo" alt="Logo2" height="120" width="120" style="position: relative;">
+        </td>
       </tr>
     </thead>
 
     <tbody>
       <tr>
         <td></td>
-        <!-- MAPA (fila 1, columna 2) -->
         <td class="map-cell">
           <div class="map-mobile">
-          <div id="map" aria-label="Mapa (Leaflet)" class="redondo"></div>
+            <div id="map" aria-label="Mapa (Leaflet)" class="redondo"></div>
           </div>
+          <input id="id_input_latitud" type="text" placeholder="Escribe aquí" value="" hidden="true" />
+          <input id="id_input_longitud" type="text" placeholder="Escribe aquí" value="" hidden="true"/>
         </td>
         <td></td>
       </tr>
-      <tr style="height: 10px;">
-        <td></td>
-        <td>
-<input id="id_input_latitud" type="text" placeholder="Escribe aquí" value="" hidden="true" />
-<input id="id_input_longitud" type="text" placeholder="Escribe aquí" value="" hidden="true"/>
-        </td>
-        <td></td>
-      </tr>
+
       <tr>
         <td></td>
         <td>
-          <!-- Calendario existente -->
-          <div class="calendar-container">
-            <header class="calendar-header">
-              <p class="calendar-current-date"></p>
-              <div class="calendar-navigation">
-                <span id="calendar-prev"
-				 class="material-symbols-rounded">
-				 </span>
-                <span id="calendar-next" 
-				class="material-symbols-rounded">
-				</span>
-              </div>
-            </header>
-            <div class="calendar-body">
-              <ul class="calendar-weekdays">
-                <li>Sun</li>
-				<li>Mon</li>
-				<li>Tue</li>
-				<li>Wed</li>
-				<li>Thu</li>
-				<li>Fri</li>
-				<li>Sat</li>
-              </ul>
-              <ul class="calendar-dates"></ul>
-            </div>
-          </div>
+          <table style="width: 100%; border-spacing: 10px;">
+            <tr>
+              <td style="width: 40%; vertical-align: top;">
+                <div class="calendar-container">
+                  <header class="calendar-header">
+                    <p class="calendar-current-date"></p>
+                    <div class="calendar-navigation">
+                      <span id="calendar-prev" class="material-symbols-rounded"></span>
+                      <span id="calendar-next" class="material-symbols-rounded"></span>
+                    </div>
+                  </header>
+                  <div class="calendar-body">
+                    <ul class="calendar-weekdays">
+                      <li>Sun</li> <li>Mon</li> <li>Tue</li> <li>Wed</li> <li>Thu</li> <li>Fri</li> <li>Sat</li>
+                    </ul>
+                    <ul class="calendar-dates"></ul>
+                  </div>
+                </div>
+                <input id="id_input_fecha_inicio" type="text" placeholder="Escribe aquí" value="" hidden="true"/>
+                <input id="id_input_fecha_fin" type="text" placeholder="Escribe aquí" value="" hidden="true"/>
+                <input id="id_input_fecha_format" type="text" placeholder="Escribe aquí" value="" hidden="true"/>
+              </td>
+
+              <td style="width: 60%; vertical-align: top;">
+                <div class="predictor" id="predictor-grafico"> <h3>Clima (NASA POWER) <span class="badge" id="p-datea">—</span></h3>
+                  <div class="coord" id="p-coorda">Selecciona una ubicación en el mapa de arriba.</div>
+                  <div class="grid">
+                    <div class="k">T2M (media)</div>
+                    <div class="v" id="p-t2ma">—</div>
+                  </div>
+                  <div class="status" id="p-statusa">Listo.</div>
+                  <canvas id="tempChart" style="max-width: 800px; margin-top:20px;"></canvas>
+                </div>
+              </td>
+            </tr>
+          </table>
         </td>
-        <td>    </td>
+        <td></td>
       </tr>
+
       <tr>
         <td></td>
-        <td><input id="id_input_fecha_inicio" type="text" placeholder="Escribe aquí" value="" hidden="true"/>
-<input id="id_input_fecha_fin" type="text" placeholder="Escribe aquí" value="" hidden="true"/>
-<input id="id_input_fecha_format" type="text" placeholder="Escribe aquí" value=""/>
-
-<div class="predictor" id="predictor">
-    <h3>Clima (NASA POWER) <span class="badge" id="p-datea">—</span></h3>
-    <div class="coord" id="p-coorda">Selecciona una ubicación en el mapa de arriba.</div>
-    <div class="grid">
-      <div class="k">T2M (media)</div>     <div class="v" id="p-t2ma">—</div>
-    </div>
-    <div class="status" id="p-statusa">Listo.</div>
-    <canvas id="tempChart" style="max-width: 800px; margin-top:20px;"></canvas>
-</div>
-
-  </td>
-        <td></td>
-         </tr>
-      <!-- ⬇️ AQUÍ VA EL PREDICTOR (sin mapa) -->
-      <tr>
-        <td></td>
-        <td style="text-align: right;">
-          <div class="predictor" id="predictor" hidden="true">
-            <h3>Clima (NASA POWER) <span class="badge" id="p-date">—</span></h3>
-            <div class="coord" id="p-coord">Selecciona una ubicación en el mapa de arriba.</div>
-            <div class="grid">
-            
-            </div>
-            <div class="status" id="p-status">Listo.</div>
-          </div>
-          <!-- WIDGETS -->
-
-        <div class="widget-container">
+        <td style="text-align: center;"> <div class="widget-container">
             <div class="widgets-container">
-                <!-- primera card -->
-                <div class="parent">
-                    <div class="subparent">
-                        <h2 class="location">Temperatura</h2>
-                        <div class="main-display">
-                            <img class="icon-main" src="./romer/src/widget/sol-256.png" alt="Icono de sol">
-                        </div>
-                        <div class="details-grid">
-                          <h2 class="location">Cº/Fº</h2>
-                          <h1 class="temperature" id="p-t2m">
-                            </h1>
-                            <h3 class="temperature" id="p-t2mmax">
-                            </h3>
-                            <h3 class="temperature" id="p-t2mmin">
-                            </h>
-                        </div>
-                    </div>
+              <div class="parent">
+                <div class="subparent">
+                  <h2 class="location">Temperatura</h2>
+                  <div class="main-display">
+                    <img class="icon-main" src="./romer/src/widget/sol-256.png" alt="Icono de sol">
+                  </div>
+                  <div class="details-grid">
+                    <h2 class="location">Cº/Fº</h2>
+                    <h1 class="temperature" id="p-t2m"></h1>
+                    <h3 class="temperature" id="p-t2mmax"></h3>
+                    <h3 class="temperature" id="p-t2mmin"></h3>
+                  </div>
                 </div>
-                <!-- segunda card -->
-                <div class="parent">
-                    <div class="subparent">
-                        <h2 class="location">Precipitación</h2>
-                        <div class="main-display">
-                            <img class="icon-main" src="./romer/src/widget/lluvia-256.png" alt="Icono de lluvia">
-                        </div>
-                        <div class="details-grid">
-                            <h1 class="precipitation" id="p-prec">
-                            </h1>
-                        </div>
+              </div>
 
-                        <h2 class="location">Humedad Relativa</h2>
-                        <div class="main-display">
-                            <img class="icon-main" src="./romer/src/widget/humedad-256.png" alt="Icono de nubes">
-                        </div>
-                        <div class="details-grid">
-                            <h1 class="relative-humidity" id="p-r_h2m">
-                            </h1>
-                        </div>
-                    </div>
-                </div>
-                <!-- tercera card -->
-                <div class="parent">
-                    <div class="subparent">
-                        <h2 class="location">Velocidad del viento</h2>
-                        <div class="main-display">
-                            <img class="icon-main" src="./romer/src/widget/viento-256.png" alt="Icono de viento">
-                        </div>
-                        <div class="details-grid">
-                            <h1 class="wind-speed" id="p-wind">
-                            </h1>
-                        </div>
+              <div class="parent">
+                <div class="subparent">
+                  <h2 class="location">Precipitación</h2>
+                  <div class="main-display">
+                    <img class="icon-main" src="./romer/src/widget/lluvia-256.png" alt="Icono de lluvia">
+                  </div>
+                  <div class="details-grid">
+                    <h1 class="precipitation" id="p-prec"></h1>
+                  </div>
 
-                        <h2 class="location">Presión Atmosférica</h2>
-                        <div class="main-display">
-                            <img class="icon-main" src="./romer/src/widget/presion-256.png" alt="Icono de presión">
-                        </div>
-                        <div class="details-grid">
-                            <h1 class="surface-pressure" id="p-pres">
-                            </h1>
-                        </div>
-                    </div>
+                  <h2 class="location">Humedad Relativa</h2>
+                  <div class="main-display">
+                    <img class="icon-main" src="./romer/src/widget/humedad-256.png" alt="Icono de nubes">
+                  </div>
+                  <div class="details-grid">
+                    <h1 class="relative-humidity" id="p-r_h2m"></h1>
+                  </div>
                 </div>
+              </div>
+
+              <div class="parent">
+                <div class="subparent">
+                  <h2 class="location">Velocidad del viento</h2>
+                  <div class="main-display">
+                    <img class="icon-main" src="./romer/src/widget/viento-256.png" alt="Icono de viento">
+                  </div>
+                  <div class="details-grid">
+                    <h1 class="wind-speed" id="p-wind"></h1>
+                  </div>
+
+                  <h2 class="location">Presión Atmosférica</h2>
+                  <div class="main-display">
+                    <img class="icon-main" src="./romer/src/widget/presion-256.png" alt="Icono de presión">
+                  </div>
+                  <div class="details-grid">
+                    <h1 class="surface-pressure" id="p-pres"></h1>
+                  </div>
+                </div>
+              </div>
             </div>
-        </div>
-        
+          </div>
         </td>
-        <td>
-          
-        </td>
+        <td></td>
       </tr>
 
-      <tr><td></td><td></td><td></td></tr>
     </tbody>
   </table>
 
-  <!-- SCRIPTS -->
-  <!-- CALENDARIO -->
   <script src="./src/scripts/calendario.js"></script>
-  <!-- MAPA Y NASA API -->
   <script src="./src/scripts/mapa.js"></script>
   <script src="./angela/script.js"></script>
-  <!-- WIDGETS -->
-   <!-- script de prueba, invocar con: data-nasa-param="WS10M", data-nasa-param="PRECTOTCORR" -->
-  <!-- <script src="./src/scripts/widget.js"></script> -->
-</body>
+  </body>
 </html>
