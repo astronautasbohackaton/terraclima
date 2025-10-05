@@ -64,9 +64,11 @@
       el.status.classList.toggle('loading', loading);
     }
     function clearVals(){
-      el.t2m.textContent = el.t2mmax.textContent = el.t2mmin.textContent =
-      el.prec.textContent = el.wind.textContent = '—';
-      el.date.textContent = '—';
+      // Limpia todos los elementos
+        el.t2m.textContent = el.t2mmax.textContent = el.t2mmin.textContent =
+        el.prec.textContent = el.wind.textContent = el.pres.textContent = 
+        el.r_h2m.textContent = '—';
+        el.date.textContent = '—';
     }
 
     async function updatePredictor(lat, lon){
