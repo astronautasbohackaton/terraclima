@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Predicción Temperatura NASA</title>
+<link rel="stylesheet" href="angela/style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<h1>Predicción de Temperatura</h1>
+
+<div id="map" style="height: 400px;"></div>
+
+<div class="predictor" id="predictor">
+    <h3>Clima (NASA POWER) <span class="badge" id="p-date">—</span></h3>
+    <div class="coord" id="p-coord">Selecciona una ubicación en el mapa de arriba.</div>
+    <div class="grid">
+      <div class="k">T2M (media)</div>     <div class="v" id="p-t2m">—</div>
+    </div>
+    <div class="status" id="p-status">Listo.</div>
+    <canvas id="tempChart" style="max-width: 800px; margin-top:20px;"></canvas>
+</div>
+
+<script src="angela/script.js"></script>
+</body>
+</html>

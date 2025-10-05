@@ -1,0 +1,8 @@
+body { font-family: Arial; text-align: center; margin: 20px; }
+.predictor { margin-top: 20px; display: inline-block; text-align: left; }
+.grid { display: grid; grid-template-columns: auto auto; gap: 5px 20px; margin-top:10px;}
+.k { font-weight: bold; }
+.v { text-align: right; }
+.coord { margin-top: 5px; font-style: italic; }
+.status { margin-top: 10px; color: green; }
+.badge { background: #ccc; padding: 3px 6px; border-radius: 4px; }
