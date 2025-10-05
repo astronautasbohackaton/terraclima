@@ -1,93 +1,145 @@
-// ====== Calendario básico (prev/next, hoy, inactivos, selección) ======
-(function(){
+// ====== Calendario robusto (6x7 fijo, selección, teclado, evento) ======
+(function () {
   const container = document.querySelector('.calendar-container');
   if (!container) return;
 
-  const currentEl = container.querySelector('.calendar-current-date');
-  const datesEl   = container.querySelector('.calendar-dates');
-  const prevBtn   = container.querySelector('#calendar-prev');
-  const nextBtn   = container.querySelector('#calendar-next');
+  const elTitle   = container.querySelector('.calendar-current-date');
+  const elDates   = container.querySelector('.calendar-dates');
+  const btnPrev   = container.querySelector('#calendar-prev');
+  const btnNext   = container.querySelector('#calendar-next');
 
-  // Estado interno (mes/año actuales mostrados)
-  let viewDate = new Date();
-  viewDate.setDate(1); // primer día del mes
+  // --- Config ---
+  const WEEK_START = 0; // 0=Domingo, 1=Lunes
+  const LOCALE = 'es-ES';
 
-  // Día seleccionado (opcional)
-  let selected = null; // { y:2025, m:9, d:4 } por ejemplo
+  // Estado
+  let view = new Date();      // mes en vista
+  view.setDate(1);
+  let selected = null;        // {y,m,d} o null
 
-  function render(){
-    const year  = viewDate.getFullYear();
-    const month = viewDate.getMonth(); // 0-11
+  // Utiles
+  const pad = (n) => String(n).padStart(2, '0');
+  const toISO = (y, m, d) => `${y}-${pad(m + 1)}-${pad(d)}`;
+  const sameYMD = (y, m, d, dt) => (dt.getFullYear() === y && dt.getMonth() === m && dt.getDate() === d);
+  const monthLabel = (y, m) => {
+    const name = new Intl.DateTimeFormat(LOCALE, { month: 'long' }).format(new Date(y, m, 1));
+    return name.charAt(0).toUpperCase() + name.slice(1) + ' ' + y;
+  };
 
-    // Título "Mes Año"
-    const monthName = viewDate.toLocaleString('es-ES', { month: 'long' });
-    currentEl.textContent = `${capitalize(monthName)} ${year}`;
+  // Corrige getDay() según WEEK_START
+  const dayIndex = (date) => {
+    const raw = date.getDay();           // 0..6 (Domingo..Sábado)
+    return (raw - WEEK_START + 7) % 7;   // reindexado con semana empezando en WEEK_START
+  };
 
-    // Cálculos de calendario
-    const firstDayIndex = new Date(year, month, 1).getDay();           // 0=Domingo
-    const lastDate      = new Date(year, month+1, 0).getDate();        // días del mes actual
-    const prevLastDate  = new Date(year, month, 0).getDate();          // días del mes anterior
-    const lastDayIndex  = new Date(year, month, lastDate).getDay();
+  function render() {
+    const Y = view.getFullYear();
+    const M = view.getMonth();
 
-    // Construye celdas (li)
+    elTitle.textContent = monthLabel(Y, M);
+
+    // --- Calcular rejilla 6x7 ---
+    // 1) ¿cuántos días del mes anterior para llenar el inicio?
+    const firstDayOfMonth = new Date(Y, M, 1);
+    const daysPrev = dayIndex(firstDayOfMonth);       // 0..6
+    // 2) días del mes actual
+    const daysInMonth = new Date(Y, M + 1, 0).getDate();
+    // 3) ¿cuántos del mes siguiente para completar 42?
+    let total = daysPrev + daysInMonth;
+    let daysNext = (7 - (total % 7)) % 7;
+    total += daysNext;
+    if (total < 42) {
+      daysNext += (42 - total); // fuerza 6 filas
+    }
+
     const items = [];
-
-    // Días previos (inactivos)
-    for (let i = firstDayIndex; i > 0; i--){
-      items.push(`<li class="inactive">${prevLastDate - i + 1}</li>`);
-    }
-
-    // Días del mes actual
     const today = new Date();
-    const isTodayMonth = (today.getFullYear()===year && today.getMonth()===month);
 
-    for (let d = 1; d <= lastDate; d++){
-      const active  = isTodayMonth && d===today.getDate() ? 'active' : '';
-      const hl      = (selected && selected.y===year && selected.m===month && selected.d===d) ? 'highlight' : '';
-      items.push(`<li class="${active} ${hl}" data-day="${d}">${d}</li>`);
+    // --- Mes anterior (inactivos) ---
+    const daysInPrevMonth = new Date(Y, M, 0).getDate();
+    for (let i = daysPrev; i > 0; i--) {
+      const d = daysInPrevMonth - i + 1;
+      items.push(`<li class="inactive" aria-disabled="true">${d}</li>`);
     }
 
-    // Días del siguiente mes (para completar la cuadrícula)
-    for (let i = lastDayIndex; i < 6; i++){
-      items.push(`<li class="inactive">${i - lastDayIndex + 1}</li>`);
+    // --- Mes actual ---
+    for (let d = 1; d <= daysInMonth; d++) {
+      const isToday = sameYMD(Y, M, d, today);
+      const isSelected = selected && selected.y === Y && selected.m === M && selected.d === d;
+
+      const classes = [
+        isToday ? 'active' : '',
+        isSelected ? 'highlight' : ''
+      ].join(' ').trim();
+
+      items.push(
+        `<li class="${classes}" data-day="${d}" tabindex="0" role="button" aria-pressed="${isSelected}">
+          ${d}
+        </li>`
+      );
     }
 
-    datesEl.innerHTML = items.join('');
+    // --- Mes siguiente (inactivos) ---
+    for (let d = 1; d <= daysNext; d++) {
+      items.push(`<li class="inactive" aria-disabled="true">${d}</li>`);
+    }
 
-    // Click en días del mes actual → selección
-    datesEl.querySelectorAll('li[data-day]').forEach(li=>{
-      li.addEventListener('click', ()=>{
-        const day = +li.dataset.day;
-        selected = { y:year, m:month, d:day };
-        // Re-render para aplicar .highlight
-        render();
+    elDates.innerHTML = items.join('');
 
-        // Si quieres, emite un evento custom con la fecha seleccionada:
-        const evt = new CustomEvent('calendar:dateSelected', {
-          detail: { year, month, day, iso: toISO(year, month, day) }
-        });
-        container.dispatchEvent(evt);
+    // --- Click / teclado en días del mes actual ---
+    elDates.querySelectorAll('li[data-day]').forEach((li) => {
+      li.addEventListener('click', () => choose(+li.dataset.day));
+      li.addEventListener('keydown', (ev) => {
+        const key = ev.key;
+        if (key === 'Enter') { choose(+li.dataset.day); return; }
+        // Navegación con flechas
+        const step = (dx) => moveFocus(li, dx);
+        if (key === 'ArrowLeft')  step(-1);
+        if (key === 'ArrowRight') step(+1);
+        if (key === 'ArrowUp')    step(-7);
+        if (key === 'ArrowDown')  step(+7);
       });
     });
   }
 
-  prevBtn?.addEventListener('click', ()=>{ viewDate.setMonth(viewDate.getMonth()-1); render(); });
-  nextBtn?.addEventListener('click', ()=>{ viewDate.setMonth(viewDate.getMonth()+1); render(); });
-
-  // Utilidades
-  function toISO(y, m, d){
-    const mm = String(m+1).padStart(2,'0');
-    const dd = String(d).padStart(2,'0');
-    return `${y}-${mm}-${dd}`;
+  // Selección de día
+  function choose(d) {
+    const y = view.getFullYear();
+    const m = view.getMonth();
+    selected = { y, m, d };
+    render();
+    const iso = toISO(y, m, d);
+    container.dispatchEvent(new CustomEvent('calendar:dateSelected', {
+      detail: { year: y, month: m, day: d, iso }
+    }));
   }
-  function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  // Mover foco dentro de la grilla (sin romper 6x7)
+  function moveFocus(fromLi, delta) {
+    const cells = Array.from(elDates.querySelectorAll('li'));
+    const idx = cells.indexOf(fromLi);
+    const j = Math.max(0, Math.min(cells.length - 1, idx + delta));
+    const target = cells[j];
+    if (target?.hasAttribute('data-day')) {
+      target.focus();
+    } else {
+      // si cae en inactivo y el movimiento fue lateral, tratamos de saltar al siguiente activo
+      const dir = Math.sign(delta) || 1;
+      let k = j;
+      while (k >= 0 && k < cells.length) {
+        if (cells[k].hasAttribute('data-day')) { cells[k].focus(); break; }
+        k += dir;
+      }
+    }
+  }
+
+  // Botones prev / next
+  btnPrev?.addEventListener('click', () => { view.setMonth(view.getMonth() - 1); render(); });
+  btnNext?.addEventListener('click', () => { view.setMonth(view.getMonth() + 1); render(); });
 
   // Inicial
   render();
 
-  // Ejemplo: escucha la fecha seleccionada (si quieres usarla)
-  container.addEventListener('calendar:dateSelected', (e)=>{
-    // console.log('Fecha elegida:', e.detail);
-    // Aquí podrías usar e.detail.iso para consultar tu API/POWER según el día.
-  });
+  // Ejemplo de escucha externa:
+  // container.addEventListener('calendar:dateSelected', e => console.log(e.detail.iso));
 })();
