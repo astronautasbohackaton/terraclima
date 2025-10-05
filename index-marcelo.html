@@ -33,12 +33,7 @@
       padding: 1px;
       text-align: center;
     }
-    th{ 
-        background-color: #f2f2f2; 
-    }
-    tr:nth-child(even){ 
-        background-color: #f9f9f9; 
-    }
+
 
     /* La celda del mapa sin padding para que el mapa ocupe al 100% */
     td.map-cell{ padding: 0; }
@@ -73,10 +68,13 @@
       
   }
 }
+.redondo {
+  border-radius: 50%;
+}
   </style>
 </head>
 <body>
-  <h1 style="text-align:center;">WEBAPP TERRACLIMA</h1>
+  
 
   <table>
     
@@ -92,14 +90,14 @@
         
         <td>
           <div>
-          <img src="./marcelo/img/logo1.jpg" alt="Logo1" height="120" width="120" style="position:relative;">
+          <img src="./marcelo/img/logo1.jpg" class="redondo" alt="Logo1" height="120" width="120" style="position:relative;">
         </div>
         </td>
 
 
-        <td></td>
+        <td><h1 style="text-align:center;">WEBAPP TERRACLIMA</h1></td>
 
-        <td><img src="./marcelo/img/logo3.jpeg" alt="Logo2" height="120" width="120" style="position: relative;"></td>
+        <td><img src="./marcelo/img/logo3.jpeg" class="redondo" alt="Logo2" height="120" width="120" style="position: relative;"></td>
       </tr>
     </thead>
 
@@ -113,6 +111,11 @@
           </div>
         </td>
         <td></td>
+      </tr>
+      <tr style="height: 10px;">
+        <td>
+
+        </td>
       </tr>
       <tr>
         <td></td>
